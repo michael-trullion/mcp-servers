@@ -126,16 +126,45 @@ The PostgreSQL server exposes the following tools:
    cd mcp-servers
    ```
 
-2. Install dependencies:
+2. Install dependencies and set up everything:
+
    ```
-   npm install
+   npm run setup
    ```
+
+   This command will:
+
+   - Install all dependencies
+   - Build the TypeScript project
+   - Make all shell scripts executable
+   - Generate Cursor IDE setup commands for each server
 
 ## Running the Servers
 
-### Running a Single Server
+### Quick Start
 
-To run a specific server:
+The setup command creates individual shell scripts for each server that can be used directly with Cursor IDE.
+After running `npm run setup`, you'll see instructions for each server configuration.
+
+### Running a Server Using the Helper Script
+
+To run a specific server using the included helper script:
+
+```
+npm run server -- [server-name]
+```
+
+For example, to run the addition server:
+
+```
+npm run server -- addition
+```
+
+This will automatically build the TypeScript code and start the server.
+
+### Running a Single Server Manually
+
+To run a specific server manually:
 
 ```
 npm run dev -- [server-name]
