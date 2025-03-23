@@ -213,52 +213,6 @@ To see a list of all available servers:
 npm run dev -- --list
 ```
 
-## Connecting to Cursor IDE
-
-The most reliable way to connect your MCP server to Cursor IDE is:
-
-1. First, build your TypeScript project to JavaScript:
-
-   ```
-   npm run build
-   ```
-
-2. Then, in Cursor IDE:
-
-   - Go to **Settings**
-   - Navigate to the **AI** section
-   - Look for **Custom AI Models** or **External Models**
-   - Select **Add Model**
-
-3. In the configuration:
-
-   - **Name**: A display name (e.g., "Addition Server")
-   - **Connection Type**: Select "Custom Command" or "stdio" (depending on your Cursor version)
-   - **Command**: Use the provided script for simplicity:
-
-     ```
-     /path/to/mcp-servers/cursor-mcp-server.sh
-     ```
-
-     This script handles directory changes and proper execution of the server.
-
-Alternative approaches:
-
-- Run the JavaScript file directly:
-
-  ```
-  node /path/to/mcp-servers/dist/src/servers/addition-server/addition-server.js
-  ```
-
-- Create your own custom script if needed
-
-**Important Notes:**
-
-- Cursor uses stdio (standard input/output) to communicate with MCP servers
-- Any output to stdout/stderr other than MCP protocol messages will break the communication
-- The built JavaScript version is more reliable than running TypeScript directly
-- Cursor expects the server to strictly follow the MCP protocol specification
-
 ## Testing Your MCP Server
 
 Before connecting to Cursor IDE, you can test your MCP server's functionality:
