@@ -2,6 +2,28 @@
 
 This project hosts multiple Model-Context-Protocol (MCP) servers designed to work with the Cursor IDE. MCP servers allow Cursor to leverage external tools and functionalities through a standardized communication protocol.
 
+## Table of Contents
+
+- [What is MCP?](#what-is-mcp)
+- [Project Structure](#project-structure)
+- [Available Servers](#available-servers)
+  - [Jira Server](#jira-server-setup)
+  - [GitHub Server](#github-server-setup)
+  - [PostgreSQL Server](#postgresql-server-setup)
+  - [Kubernetes Server](#kubernetes-server-setup)
+- [Prerequisites](#prerequisites)
+- [How To Use](#how-to-use)
+- [Running the Servers](#running-the-servers)
+  - [Quick Start](#quick-start)
+  - [Running a Server Using the Helper Script](#running-a-server-using-the-helper-script)
+  - [Running a Single Server Manually](#running-a-single-server-manually)
+  - [Running All Servers](#running-all-servers)
+  - [List Available Servers](#list-available-servers)
+- [Testing Your MCP Server](#testing-your-mcp-server)
+- [Adding a New MCP Server](#adding-a-new-mcp-server)
+- [Understanding MCP Server Development](#understanding-mcp-server-development)
+- [Building the Project](#building-the-project)
+
 ## What is MCP?
 
 Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs (Large Language Models). Think of MCP like a communication interface between Cursor IDE and external tools. MCP servers expose tools that can be used by Cursor IDE to enhance its capabilities.
