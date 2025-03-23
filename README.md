@@ -144,7 +144,7 @@ The Kubernetes server exposes the following tools:
 - Node.js (v16 or newer)
 - npm or yarn
 
-## Installation
+## How To Use
 
 1. Clone this repository:
 
