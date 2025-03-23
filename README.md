@@ -115,7 +115,7 @@ The PostgreSQL server exposes the following tools:
 
 ### Kubernetes Server Setup
 
-The Kubernetes server requires the following environment variables:
+The Kubernetes server requires the following environment variabless:
 
 1. Create a `.env` file in the project root (or copy from `.env.example`):
 
