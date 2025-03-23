@@ -24,6 +24,54 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
 - [Understanding MCP Server Development](#understanding-mcp-server-development)
 - [Building the Project](#building-the-project)
 
+## Prerequisites
+
+- Node.js (v16 or newer)
+- npm or yarn
+
+## How To Use
+
+1. Clone this repository:
+
+   ```
+   git clone https://github.com/yourusername/mcp-servers.git
+   cd mcp-servers
+   ```
+
+2. Install dependencies and set up everything:
+
+   ```
+   npm run setup
+   ```
+
+   This command will:
+
+   - Install all dependencies
+   - Build the TypeScript project
+   - Generate the necessary scripts for Cursor IDE integration
+   - Provide instructions for setting up each server in Cursor
+
+3. Configure Cursor IDE:
+
+   - Open Cursor IDE
+   - Go to Cursor Settings > Features > Mcp Servers
+   - Click "Add New Mcp Server"
+   - Enter a name for the server (e.g., "jira")
+   - For "Connection Type", select "command"
+   - For "command", paste the path provided by the prepare script
+   - Click "Save"
+
+4. Environment Variables:
+
+   - Copy the `.env.example` file to `.env`
+   - Update the variables with your own credentials for each service
+
+5. Use Mcp In Cursor IDE:
+
+   - Open the composer
+   - make sure you are using agent mode (claude 3.7 sonnet thinking is recommended)
+   - submit the message you want to cursor
+
 ## What is MCP?
 
 Model Context Protocol (MCP) is an open protocol that standardizes how applications provide context to LLMs (Large Language Models). Think of MCP like a communication interface between Cursor IDE and external tools. MCP servers expose tools that can be used by Cursor IDE to enhance its capabilities.
@@ -160,54 +208,6 @@ The Kubernetes server exposes the following tools:
 - `kill_pod` - Deletes a pod in a specified namespace
 - `exec_in_pod` - Executes a command in a specified pod and container
 - `get_pod_logs` - Retrieves logs from a specified pod, with options for container, line count, and previous instance
-
-## Prerequisites
-
-- Node.js (v16 or newer)
-- npm or yarn
-
-## How To Use
-
-1. Clone this repository:
-
-   ```
-   git clone https://github.com/yourusername/mcp-servers.git
-   cd mcp-servers
-   ```
-
-2. Install dependencies and set up everything:
-
-   ```
-   npm run setup
-   ```
-
-   This command will:
-
-   - Install all dependencies
-   - Build the TypeScript project
-   - Generate the necessary scripts for Cursor IDE integration
-   - Provide instructions for setting up each server in Cursor
-
-3. Configure Cursor IDE:
-
-   - Open Cursor IDE
-   - Go to Cursor Settings > Features > Mcp Servers
-   - Click "Add New Mcp Server"
-   - Enter a name for the server (e.g., "jira")
-   - For "Connection Type", select "command"
-   - For "command", paste the path provided by the prepare script
-   - Click "Save"
-
-4. Environment Variables:
-
-   - Copy the `.env.example` file to `.env`
-   - Update the variables with your own credentials for each service
-
-5. Use Mcp In Cursor IDE:
-
-   - Open the composer
-   - make sure you are using agent mode (claude 3.7 sonnet thinking is recommended)
-   - submit the message you want to cursor
 
 ## Running the Servers
 
