@@ -391,12 +391,6 @@ When developing an MCP server, keep in mind:
      };
      ```
 
-4. **Error Handling** is important to provide helpful feedback when something goes wrong.
-
-## License
-
-[MIT](LICENSE)
-
 ## Building the Project
 
 To build the project, run:
