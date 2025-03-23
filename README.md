@@ -136,8 +136,29 @@ The PostgreSQL server exposes the following tools:
 
    - Install all dependencies
    - Build the TypeScript project
-   - Make all shell scripts executable
-   - Generate Cursor IDE setup commands for each server
+   - Generate the necessary scripts for Cursor IDE integration
+   - Provide instructions for setting up each server in Cursor
+
+3. Configure Cursor IDE:
+
+   - Open Cursor IDE
+   - Go to Cursor Settings > Features > Mcp Servers
+   - Click "Add New Mcp Server"
+   - Enter a name for the server (e.g., "Jira Server")
+   - For "Connection Type", select "command"
+   - For "command", paste the path provided by the prepare script
+   - Click "Save"
+
+4. Environment Variables:
+
+   - Copy the `.env.example` file to `.env`
+   - Update the variables with your own credentials for each service
+
+5. Use Mcp In Cursor IDE:
+
+   - Open the composer
+   - make sure you are using agent mode (claude 3.7 sonnet thinking is recommended)
+   - submit the message you want to cursor
 
 ## Running the Servers
 
