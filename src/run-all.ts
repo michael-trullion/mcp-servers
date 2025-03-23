@@ -23,6 +23,10 @@ const servers = [
     name: "PostgreSQL Server",
     path: join(__dirname, "servers/postgres-server/postgres-server.ts"),
   },
+  {
+    name: "Kubernetes Server",
+    path: join(__dirname, "servers/kubernetes-server/kubernetes-server.ts"),
+  },
   // Add more servers here as they are created
 ];
 

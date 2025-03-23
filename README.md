@@ -31,6 +31,7 @@ Currently, the following MCP servers are available:
 2. **Jira Server** - A server that provides access to Jira's REST API for retrieving projects, issues, boards, and sprints.
 3. **GitHub Server** - A server that provides access to GitHub's REST API for retrieving repositories, issues, pull requests, branches, and commits.
 4. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
+5. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
 
 ### Jira Server Setup
 
@@ -111,6 +112,32 @@ The PostgreSQL server exposes the following tools:
 - `mcp__list_tables` - Lists all tables in the current database schema
 - `mcp__get_table_structure` - Gets the column definitions for a specific table
 - `mcp__execute_query` - Executes a custom SQL query against the database
+
+### Kubernetes Server Setup
+
+The Kubernetes server requires the following environment variables:
+
+1. Create a `.env` file in the project root (or copy from `.env.example`):
+
+   ```
+   # Kubernetes Configuration
+   KUBECONFIG=/path/to/your/kubeconfig
+   # or
+   # KUBE_API_URL=https://your-kubernetes-api-server
+   # KUBE_API_TOKEN=your-kubernetes-service-account-token
+   ```
+
+2. Ensure you have access to a Kubernetes cluster and the appropriate permissions.
+
+#### Available Kubernetes Tools
+
+The Kubernetes server exposes the following tools:
+
+- `get_pods` - Retrieves pods from a specified namespace, with optional field and label selectors
+- `find_pods` - Finds pods matching a name pattern in a specified namespace
+- `kill_pod` - Deletes a pod in a specified namespace
+- `exec_in_pod` - Executes a command in a specified pod and container
+- `get_pod_logs` - Retrieves logs from a specified pod, with options for container, line count, and previous instance
 
 ## Prerequisites
 

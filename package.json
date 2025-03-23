@@ -12,6 +12,7 @@
     "start:jira": "node dist/src/servers/jira-server/jira-server.js",
     "start:github": "node dist/src/servers/github-server/github-server.js",
     "start:postgres": "node dist/src/servers/postgres-server/postgres-server.js",
+    "start:kubernetes": "node dist/src/servers/kubernetes-server/kubernetes-server.js",
     "setup": "npm install && npm run build && find . -name \"*.sh\" -exec chmod +x {} \\; && node scripts/generate-cursor-commands.js",
     "server": "node scripts/run-server.js",
     "dev": "NODE_OPTIONS=\"--loader ts-node/esm\" node --experimental-specifier-resolution=node src/index.ts",
@@ -19,7 +20,8 @@
     "dev:addition": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/addition-server/addition-server.ts",
     "dev:jira": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/jira-server/jira-server.ts",
     "dev:github": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/github-server/github-server.ts",
-    "dev:postgres": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/postgres-server/postgres-server.ts"
+    "dev:postgres": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/postgres-server/postgres-server.ts",
+    "dev:kubernetes": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/kubernetes-server/kubernetes-server.ts"
   },
   "keywords": [
     "mcp",
@@ -30,6 +32,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "@kubernetes/client-node": "^0.20.0",
     "@modelcontextprotocol/sdk": "^1.7.0",
     "@types/node": "^22.13.11",
     "dotenv": "^16.4.7",
