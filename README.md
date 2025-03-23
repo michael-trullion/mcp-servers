@@ -144,7 +144,7 @@ The PostgreSQL server exposes the following tools:
    - Open Cursor IDE
    - Go to Cursor Settings > Features > Mcp Servers
    - Click "Add New Mcp Server"
-   - Enter a name for the server (e.g., "Jira Server")
+   - Enter a name for the server (e.g., "jira")
    - For "Connection Type", select "command"
    - For "command", paste the path provided by the prepare script
    - Click "Save"
