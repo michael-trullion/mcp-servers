@@ -4,6 +4,8 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
 
 ## Table of Contents
 
+- [Prerequisites](#prerequisites)
+- [How To Use](#how-to-use)
 - [What is MCP?](#what-is-mcp)
 - [Project Structure](#project-structure)
 - [Available Servers](#available-servers)
@@ -11,8 +13,6 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
   - [GitHub Server](#github-server-setup)
   - [PostgreSQL Server](#postgresql-server-setup)
   - [Kubernetes Server](#kubernetes-server-setup)
-- [Prerequisites](#prerequisites)
-- [How To Use](#how-to-use)
 - [Running the Servers](#running-the-servers)
   - [Quick Start](#quick-start)
   - [Running a Server Using the Helper Script](#running-a-server-using-the-helper-script)
