@@ -154,6 +154,8 @@ The GitHub server exposes the following tools:
 - `get_pull_request` - Gets details about a specific pull request
 - `get_branches` - Retrieves branches for a repository
 - `get_commits` - Gets commits for a repository, optionally filtered by branch
+- `comment_on_pr` - Adds a comment to a specific pull request (always signed with "Created by Cursor")
+- `summarize_pr_diff` - Generates a summary of PR changes and optionally posts it as a comment
 
 ### PostgreSQL Server Setup
 

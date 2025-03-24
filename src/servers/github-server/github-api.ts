@@ -73,6 +73,20 @@ export interface GitHubCommit {
   [key: string]: any;
 }
 
+export interface GitHubPullRequestFile {
+  sha: string;
+  filename: string;
+  status: string;
+  additions: number;
+  deletions: number;
+  changes: number;
+  blob_url: string;
+  raw_url: string;
+  contents_url: string;
+  patch?: string;
+  [key: string]: any;
+}
+
 /**
  * Get a list of repositories for the authenticated user
  * @param maxResults Maximum number of results to return (default: 20)
@@ -334,6 +348,128 @@ export async function getCommits(
     return (await response.json()) as GitHubCommit[];
   } catch (error) {
     console.error(`Error fetching commits for ${owner}/${repo}:`, error);
+    throw error;
+  }
+}
+
+/**
+ * Create a comment on a pull request
+ * @param owner Repository owner (username or organization)
+ * @param repo Repository name
+ * @param prNumber Pull request number
+ * @param comment Comment text content
+ * @param addSignature Whether to add "Created by Cursor" signature (default: true)
+ */
+export async function createPullRequestComment(
+  owner: string,
+  repo: string,
+  prNumber: number,
+  comment: string,
+  addSignature: boolean = true
+): Promise<any> {
+  try {
+    const finalComment = addSignature
+      ? `${comment}\n\n_This comment was created by Cursor_`
+      : comment;
+
+    const response = await fetch(
+      `${GITHUB_API_URL}/repos/${owner}/${repo}/issues/${prNumber}/comments`,
+      {
+        method: "POST",
+        headers,
+        body: JSON.stringify({ body: finalComment }),
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error: ${response.status} - ${response.statusText}`
+      );
+    }
+
+    return await response.json();
+  } catch (error) {
+    console.error(
+      `Error creating comment on PR #${prNumber} for ${owner}/${repo}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Get the diff for a pull request
+ * @param owner Repository owner (username or organization)
+ * @param repo Repository name
+ * @param prNumber Pull request number
+ */
+export async function getPullRequestDiff(
+  owner: string,
+  repo: string,
+  prNumber: number
+): Promise<string> {
+  try {
+    const customHeaders = {
+      ...headers,
+      Accept: "application/vnd.github.v3.diff",
+    };
+
+    const response = await fetch(
+      `${GITHUB_API_URL}/repos/${owner}/${repo}/pulls/${prNumber}`,
+      {
+        method: "GET",
+        headers: customHeaders,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error: ${response.status} - ${response.statusText}`
+      );
+    }
+
+    return await response.text();
+  } catch (error) {
+    console.error(
+      `Error fetching diff for PR #${prNumber} for ${owner}/${repo}:`,
+      error
+    );
+    throw error;
+  }
+}
+
+/**
+ * Get files changed in a pull request
+ * @param owner Repository owner (username or organization)
+ * @param repo Repository name
+ * @param prNumber Pull request number
+ */
+export async function getPullRequestFiles(
+  owner: string,
+  repo: string,
+  prNumber: number
+): Promise<GitHubPullRequestFile[]> {
+  try {
+    const response = await fetch(
+      `${GITHUB_API_URL}/repos/${owner}/${repo}/pulls/${prNumber}/files`,
+      {
+        method: "GET",
+        headers,
+      }
+    );
+
+    if (!response.ok) {
+      throw new Error(
+        `HTTP error: ${response.status} - ${response.statusText}`
+      );
+    }
+
+    return (await response.json()) as GitHubPullRequestFile[];
+  } catch (error) {
+    console.error(
+      `Error fetching files for PR #${prNumber} for ${owner}/${repo}:`,
+      error
+    );
     throw error;
   }
 }
