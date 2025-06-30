@@ -95,7 +95,7 @@ export class PdfProcessor {
         const fields = form.getFields();
         console.log(`Found ${fields.length} form fields`);
 
-        fields.forEach((field) => {
+        fields.forEach((field: any) => {
           const fieldName = field.getName();
           if (field instanceof PDFTextField) {
             formFields[fieldName] = field.getText() || "";
