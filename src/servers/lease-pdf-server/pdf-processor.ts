@@ -1,7 +1,9 @@
 import { PDFDocument, PDFForm, PDFTextField, StandardFonts } from "pdf-lib";
 import * as fs from "fs";
 import * as path from "path";
-import pdfParse from "pdf-parse";
+// Fix for pdf-parse ENOENT error - import directly from lib to avoid debug code
+// @ts-ignore - pdf-parse lib doesn't have proper types
+import * as pdfParse from "pdf-parse/lib/pdf-parse.js";
 import { PdfReadResult, PdfWriteRequest, PdfWriteResult } from "./types.js";
 
 export class PdfProcessor {
@@ -77,8 +79,8 @@ export class PdfProcessor {
 
       console.log(`Starting PDF parsing with enhanced options...`);
 
-      // Extract text content with enhanced options
-      const pdfData = await pdfParse(pdfBuffer, options);
+      // Extract text content with enhanced options - use the fixed import
+      const pdfData = await (pdfParse as any).default(pdfBuffer, options);
 
       console.log(`PDF parsing completed:
         - Total pages: ${pdfData.numpages}
