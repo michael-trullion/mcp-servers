@@ -34,7 +34,7 @@ function main() {
       console.log(`  - ${server}`);
     });
     console.log("");
-    console.log("Example: node scripts/run-server.js jira");
+    console.log("Example: node scripts/run-server.js github");
     return;
   }
 

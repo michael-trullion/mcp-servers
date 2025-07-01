@@ -9,7 +9,6 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
 - [What is MCP?](#what-is-mcp)
 - [Project Structure](#project-structure)
 - [Available Servers](#available-servers)
-  - [Jira Server](#jira-server-setup)
   - [GitHub Server](#github-server-setup)
   - [PostgreSQL Server](#postgresql-server-setup)
   - [Kubernetes Server](#kubernetes-server-setup)
@@ -56,7 +55,7 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
    - Open Cursor IDE
    - Go to Cursor Settings > Features > Mcp Servers
    - Click "Add New Mcp Server"
-   - Enter a name for the server (e.g., "jira")
+   - Enter a name for the server (e.g., "github")
    - For "Connection Type", select "command"
    - For "command", paste the path provided by the prepare script
    - Click "Save"
@@ -82,8 +81,8 @@ Model Context Protocol (MCP) is an open protocol that standardizes how applicati
 mcp-servers/
 ├── src/
 │   ├── servers/                  # Individual MCP servers
-│   │   ├── jira-server/          # Jira integration server
-│   │   │   └── jira-server.ts
+│   │   ├── github-server/        # GitHub integration server
+│   │   │   └── github-server.ts
 │   │   └── ... (more servers)
 │   ├── template/                 # Reusable templates
 │   │   └── mcp-server-template.ts
@@ -97,36 +96,9 @@ mcp-servers/
 
 Currently, the following MCP servers are available:
 
-1. **Jira Server** - A server that provides access to Jira's REST API for retrieving projects, issues, boards, and sprints.
-2. **GitHub Server** - A server that provides access to GitHub's REST API for retrieving repositories, issues, pull requests, branches, and commits.
-3. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
-4. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
-
-### Jira Server Setup
-
-The Jira server requires the following environment variables:
-
-1. Create a `.env` file in the project root (or copy from `.env.example`):
-
-   ```
-   # Jira API Configuration
-   JIRA_API_URL=https://your-domain.atlassian.net
-   JIRA_EMAIL=your-email@example.com
-   JIRA_API_TOKEN=your-jira-api-token
-   ```
-
-2. Generate an API token at: https://id.atlassian.com/manage-profile/security/api-tokens
-
-#### Available Jira Tools
-
-The Jira server exposes the following tools:
-
-- `get_projects` - Retrieves all accessible Jira projects
-- `get_project` - Gets details about a specific project by key
-- `search_issues` - Searches for issues using JQL (Jira Query Language)
-- `get_issue` - Gets details about a specific issue by key
-- `get_boards` - Retrieves all accessible boards
-- `get_sprints` - Gets all sprints for a specific board
+1. **GitHub Server** - A server that provides access to GitHub's REST API for retrieving repositories, issues, pull requests, branches, and commits.
+2. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
+3. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
 
 ### GitHub Server Setup
 
@@ -225,10 +197,10 @@ To run a specific server using the included helper script:
 npm run server -- [server-name]
 ```
 
-For example, to run the jira server:
+For example, to run the github server:
 
 ```
-npm run server -- jira
+npm run server -- github
 ```
 
 This will automatically build the TypeScript code and start the server.
@@ -241,10 +213,10 @@ To run a specific server manually:
 npm run dev -- [server-name]
 ```
 
-For example, to run the jira server:
+For example, to run the github server:
 
 ```
-npm run dev -- jira
+npm run dev -- github
 ```
 
 ### Running All Servers
@@ -276,7 +248,7 @@ Before connecting to Cursor IDE, you can test your MCP server's functionality:
 2. Run the server:
 
    ```
-   npm run start:jira
+   npm run start:github
    ```
 
 3. For convenience, this project includes a ready-to-use script for Cursor:
@@ -285,7 +257,7 @@ Before connecting to Cursor IDE, you can test your MCP server's functionality:
    /path/to/mcp-servers/cursor-mcp-server.sh [server-name]
    ```
 
-   You can use this script path directly in your Cursor IDE configuration. If no server name is provided, it defaults to the jira server.
+   You can use this script path directly in your Cursor IDE configuration. If no server name is provided, it defaults to the github server.
 
 ## Adding a New MCP Server
 

@@ -3,13 +3,13 @@
 # This script is specifically for Cursor IDE to run the MCP server
 # It ensures proper working directory and environment
 # Usage: ./cursor-mcp-server.sh [server-name]
-# Default server: jira
+# Default server: github
 
 # Change to the project directory
 cd "$(dirname "$0")"
 
-# Get server name from argument or default to jira
-SERVER_NAME=${1:-jira}
+# Get server name from argument or default to github
+SERVER_NAME=${1:-github}
 
 # Ensure the TypeScript code is built
 npm run build > /dev/null 2>&1

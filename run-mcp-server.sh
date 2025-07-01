@@ -3,8 +3,8 @@
 # Log file for debugging
 LOG_FILE="$HOME/mcp-server-cursor.log"
 
-# Get server name from argument or default to jira
-SERVER_NAME=${1:-jira}
+# Get server name from argument or default to github
+SERVER_NAME=${1:-github}
 
 # Log start time and command
 echo "=== Starting MCP Server $(date) ===" > "$LOG_FILE"
