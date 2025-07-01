@@ -9,7 +9,6 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
 - [What is MCP?](#what-is-mcp)
 - [Project Structure](#project-structure)
 - [Available Servers](#available-servers)
-  - [GitHub Server](#github-server-setup)
   - [PostgreSQL Server](#postgresql-server-setup)
   - [Kubernetes Server](#kubernetes-server-setup)
 - [Running the Servers](#running-the-servers)
@@ -55,7 +54,7 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
    - Open Cursor IDE
    - Go to Cursor Settings > Features > Mcp Servers
    - Click "Add New Mcp Server"
-   - Enter a name for the server (e.g., "github")
+   - Enter a name for the server (e.g., "postgres")
    - For "Connection Type", select "command"
    - For "command", paste the path provided by the prepare script
    - Click "Save"
@@ -81,8 +80,8 @@ Model Context Protocol (MCP) is an open protocol that standardizes how applicati
 mcp-servers/
 ├── src/
 │   ├── servers/                  # Individual MCP servers
-│   │   ├── github-server/        # GitHub integration server
-│   │   │   └── github-server.ts
+│   │   ├── postgres-server/      # PostgreSQL integration server
+│   │   │   └── postgres-server.ts
 │   │   └── ... (more servers)
 │   ├── template/                 # Reusable templates
 │   │   └── mcp-server-template.ts
@@ -96,37 +95,8 @@ mcp-servers/
 
 Currently, the following MCP servers are available:
 
-1. **GitHub Server** - A server that provides access to GitHub's REST API for retrieving repositories, issues, pull requests, branches, and commits.
-2. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
-3. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
-
-### GitHub Server Setup
-
-The GitHub server requires the following environment variables:
-
-1. Create a `.env` file in the project root (or copy from `.env.example`):
-
-   ```
-   # GitHub API Configuration
-   GITHUB_TOKEN=your-github-personal-access-token
-   ```
-
-2. Generate a personal access token at: https://github.com/settings/tokens
-
-#### Available GitHub Tools
-
-The GitHub server exposes the following tools:
-
-- `get_repositories` - Retrieves all repositories accessible to the authenticated user
-- `get_repository` - Gets details about a specific repository
-- `get_issues` - Retrieves issues for a repository
-- `get_issue` - Gets details about a specific issue
-- `get_pull_requests` - Retrieves pull requests for a repository
-- `get_pull_request` - Gets details about a specific pull request
-- `get_branches` - Retrieves branches for a repository
-- `get_commits` - Gets commits for a repository, optionally filtered by branch
-- `comment_on_pr` - Adds a comment to a specific pull request (always signed with "Created by Cursor")
-- `summarize_pr_diff` - Generates a summary of PR changes and optionally posts it as a comment
+1. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
+2. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
 
 ### PostgreSQL Server Setup
 
@@ -197,10 +167,10 @@ To run a specific server using the included helper script:
 npm run server -- [server-name]
 ```
 
-For example, to run the github server:
+For example, to run the postgres server:
 
 ```
-npm run server -- github
+npm run server -- postgres
 ```
 
 This will automatically build the TypeScript code and start the server.
@@ -213,10 +183,10 @@ To run a specific server manually:
 npm run dev -- [server-name]
 ```
 
-For example, to run the github server:
+For example, to run the postgres server:
 
 ```
-npm run dev -- github
+npm run dev -- postgres
 ```
 
 ### Running All Servers
@@ -248,7 +218,7 @@ Before connecting to Cursor IDE, you can test your MCP server's functionality:
 2. Run the server:
 
    ```
-   npm run start:github
+   npm run start:postgres
    ```
 
 3. For convenience, this project includes a ready-to-use script for Cursor:
@@ -257,7 +227,7 @@ Before connecting to Cursor IDE, you can test your MCP server's functionality:
    /path/to/mcp-servers/cursor-mcp-server.sh [server-name]
    ```
 
-   You can use this script path directly in your Cursor IDE configuration. If no server name is provided, it defaults to the github server.
+   You can use this script path directly in your Cursor IDE configuration. If no server name is provided, it defaults to the postgres server.
 
 ## Adding a New MCP Server
 

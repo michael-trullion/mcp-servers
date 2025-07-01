@@ -8,7 +8,6 @@
     "build": "tsc",
     "start": "node dist/src/index.js",
     "start:all": "node dist/src/run-all.js",
-    "start:github": "node dist/src/servers/github-server/github-server.js",
     "start:postgres": "node dist/src/servers/postgres-server/postgres-server.js",
     "start:kubernetes": "node dist/src/servers/kubernetes-server/kubernetes-server.js",
     "start:pdf": "node dist/src/servers/lease-pdf-server/pdf-server.js",
@@ -16,7 +15,6 @@
     "server": "node scripts/run-server.js",
     "dev": "NODE_OPTIONS=\"--loader ts-node/esm\" node --experimental-specifier-resolution=node src/index.ts",
     "dev:all": "NODE_OPTIONS=\"--loader ts-node/esm\" node --experimental-specifier-resolution=node src/run-all.ts",
-    "dev:github": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/github-server/github-server.ts",
     "dev:postgres": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/postgres-server/postgres-server.ts",
     "dev:kubernetes": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/kubernetes-server/kubernetes-server.ts",
     "dev:pdf": "NODE_OPTIONS=\"--loader ts-node/esm\" node src/servers/lease-pdf-server/pdf-server.ts"

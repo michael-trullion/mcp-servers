@@ -8,10 +8,6 @@ const __dirname = dirname(__filename);
 // Define available servers
 const servers = [
   {
-    name: "GitHub Server",
-    path: join(__dirname, "servers/github-server/github-server.ts"),
-  },
-  {
     name: "PostgreSQL Server",
     path: join(__dirname, "servers/postgres-server/postgres-server.ts"),
   },
