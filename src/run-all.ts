@@ -8,10 +8,6 @@ const __dirname = dirname(__filename);
 // Define available servers
 const servers = [
   {
-    name: "Addition Server",
-    path: join(__dirname, "servers/addition-server/addition-server.ts"),
-  },
-  {
     name: "Jira Server",
     path: join(__dirname, "servers/jira-server/jira-server.ts"),
   },

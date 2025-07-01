@@ -82,8 +82,8 @@ Model Context Protocol (MCP) is an open protocol that standardizes how applicati
 mcp-servers/
 ├── src/
 │   ├── servers/                  # Individual MCP servers
-│   │   ├── addition-server/      # Example addition server
-│   │   │   └── addition-server.ts
+│   │   ├── jira-server/          # Jira integration server
+│   │   │   └── jira-server.ts
 │   │   └── ... (more servers)
 │   ├── template/                 # Reusable templates
 │   │   └── mcp-server-template.ts
@@ -97,11 +97,10 @@ mcp-servers/
 
 Currently, the following MCP servers are available:
 
-1. **Addition Server** - A simple server that adds two numbers together.
-2. **Jira Server** - A server that provides access to Jira's REST API for retrieving projects, issues, boards, and sprints.
-3. **GitHub Server** - A server that provides access to GitHub's REST API for retrieving repositories, issues, pull requests, branches, and commits.
-4. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
-5. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
+1. **Jira Server** - A server that provides access to Jira's REST API for retrieving projects, issues, boards, and sprints.
+2. **GitHub Server** - A server that provides access to GitHub's REST API for retrieving repositories, issues, pull requests, branches, and commits.
+3. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
+4. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
 
 ### Jira Server Setup
 
@@ -226,10 +225,10 @@ To run a specific server using the included helper script:
 npm run server -- [server-name]
 ```
 
-For example, to run the addition server:
+For example, to run the jira server:
 
 ```
-npm run server -- addition
+npm run server -- jira
 ```
 
 This will automatically build the TypeScript code and start the server.
@@ -242,10 +241,10 @@ To run a specific server manually:
 npm run dev -- [server-name]
 ```
 
-For example, to run the addition server:
+For example, to run the jira server:
 
 ```
-npm run dev -- addition
+npm run dev -- jira
 ```
 
 ### Running All Servers
@@ -277,43 +276,16 @@ Before connecting to Cursor IDE, you can test your MCP server's functionality:
 2. Run the server:
 
    ```
-   npm run start:addition
+   npm run start:jira
    ```
 
-3. In a separate terminal, you can test the server by sending MCP protocol messages manually:
-
-   ```json
-   {
-     "type": "request",
-     "id": "test1",
-     "name": "add",
-     "params": { "num1": 5, "num2": 7 }
-   }
-   ```
-
-   The server should respond with:
-
-   ```json
-   {
-     "type": "response",
-     "id": "test1",
-     "content": [
-       { "type": "text", "text": "The sum of 5 and 7 is 12." },
-       {
-         "type": "text",
-         "text": "{\n  \"num1\": 5,\n  \"num2\": 7,\n  \"sum\": 12\n}"
-       }
-     ]
-   }
-   ```
-
-4. For convenience, this project includes a ready-to-use script for Cursor:
+3. For convenience, this project includes a ready-to-use script for Cursor:
 
    ```
-   /path/to/mcp-servers/cursor-mcp-server.sh
+   /path/to/mcp-servers/cursor-mcp-server.sh [server-name]
    ```
 
-   You can use this script path directly in your Cursor IDE configuration.
+   You can use this script path directly in your Cursor IDE configuration. If no server name is provided, it defaults to the jira server.
 
 ## Adding a New MCP Server
 
