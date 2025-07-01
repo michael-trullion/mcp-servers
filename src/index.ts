@@ -17,6 +17,11 @@ const servers = [
     displayName: "Kubernetes Server",
     path: join(__dirname, "servers/kubernetes-server/kubernetes-server.ts"),
   },
+  {
+    name: "pdf",
+    displayName: "PDF Server",
+    path: join(__dirname, "servers/lease-pdf-server/pdf-server.ts"),
+  },
   // Add more servers here as they are created
 ];
 

@@ -4,14 +4,12 @@ This project hosts multiple Model-Context-Protocol (MCP) servers designed to wor
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
 - [How To Use](#how-to-use)
 - [What is MCP?](#what-is-mcp)
 - [Project Structure](#project-structure)
 - [Available Servers](#available-servers)
-  - [PostgreSQL Server](#postgresql-server-setup)
-  - [Kubernetes Server](#kubernetes-server-setup)
-  - [PDF Server](#pdf-server-setup)
+- [Server Configuration](#server-configuration)
+- [Available Tools](#available-tools)
 - [Running the Servers](#running-the-servers)
   - [Quick Start](#quick-start)
   - [Running a Server Using the Helper Script](#running-a-server-using-the-helper-script)
@@ -83,6 +81,10 @@ mcp-servers/
 │   ├── servers/                  # Individual MCP servers
 │   │   ├── postgres-server/      # PostgreSQL integration server
 │   │   │   └── postgres-server.ts
+│   │   ├── kubernetes-server/    # Kubernetes integration server
+│   │   │   └── kubernetes-server.ts
+│   │   ├── lease-pdf-server/     # PDF processing server
+│   │   │   └── pdf-server.ts
 │   │   └── ... (more servers)
 │   ├── template/                 # Reusable templates
 │   │   └── mcp-server-template.ts
@@ -96,57 +98,43 @@ mcp-servers/
 
 Currently, the following MCP servers are available:
 
-1. **PostgreSQL Server** - A server that provides access to a PostgreSQL database for executing queries and retrieving database schema information.
-2. **Kubernetes Server** - A server that provides access to a Kubernetes cluster for managing pods, executing commands, and retrieving logs.
-3. **PDF Server** - A server that provides PDF document processing capabilities including text extraction, form field reading/writing, and PDF generation.
+1. **PostgreSQL Server** - Provides access to PostgreSQL databases for executing queries and retrieving schema information
+2. **Kubernetes Server** - Provides access to Kubernetes clusters for managing pods, executing commands, and retrieving logs
+3. **PDF Server** - Provides PDF document processing capabilities including text extraction, form field reading/writing, and PDF generation
 
-### PostgreSQL Server Setup
+## Server Configuration
 
-The PostgreSQL server requires the following environment variables:
+All servers are configured through environment variables. Create a `.env` file in the project root (or copy from `.env.example`) and configure the services you plan to use:
 
-1. Create a `.env` file in the project root (or copy from `.env.example`):
+```bash
+# PostgreSQL Configuration (for PostgreSQL server)
+POSTGRES_HOST=localhost
+POSTGRES_PORT=5432
+POSTGRES_DB=your_database_name
+POSTGRES_USER=your_username
+POSTGRES_PASSWORD=your_password
+# POSTGRES_SSL_MODE=require # Uncomment if SSL is required
+# POSTGRES_MAX_CONNECTIONS=10 # Optional: limit connection pool size
 
-   ```
-   # PostgreSQL Configuration
-   POSTGRES_HOST=localhost
-   POSTGRES_PORT=5432
-   POSTGRES_DB=your_database_name
-   POSTGRES_USER=your_username
-   POSTGRES_PASSWORD=your_password
-   # POSTGRES_SSL_MODE=require # Uncomment if SSL is required
-   # POSTGRES_MAX_CONNECTIONS=10 # Optional: limit connection pool size
-   ```
+# Kubernetes Configuration (for Kubernetes server)
+KUBECONFIG=/path/to/your/kubeconfig
+# Alternative Kubernetes configuration:
+# KUBE_API_URL=https://your-kubernetes-api-server
+# KUBE_API_TOKEN=your-kubernetes-service-account-token
 
-2. Ensure you have a PostgreSQL database running and accessible with the provided credentials.
+# PDF Server requires no additional configuration
+```
 
-#### Available PostgreSQL Tools
+## Available Tools
 
-The PostgreSQL server exposes the following tools:
+### PostgreSQL Server Tools
 
 - `mcp__get_database_info` - Retrieves information about the connected database
 - `mcp__list_tables` - Lists all tables in the current database schema
 - `mcp__get_table_structure` - Gets the column definitions for a specific table
 - `mcp__execute_query` - Executes a custom SQL query against the database
 
-### Kubernetes Server Setup
-
-The Kubernetes server requires the following environment variables:
-
-1. Create a `.env` file in the project root (or copy from `.env.example`):
-
-   ```
-   # Kubernetes Configuration
-   KUBECONFIG=/path/to/your/kubeconfig
-   # or
-   # KUBE_API_URL=https://your-kubernetes-api-server
-   # KUBE_API_TOKEN=your-kubernetes-service-account-token
-   ```
-
-2. Ensure you have access to a Kubernetes cluster and the appropriate permissions.
-
-#### Available Kubernetes Tools
-
-The Kubernetes server exposes the following tools:
+### Kubernetes Server Tools
 
 - `get_pods` - Retrieves pods from a specified namespace, with optional field and label selectors
 - `find_pods` - Finds pods matching a name pattern in a specified namespace
@@ -154,101 +142,19 @@ The Kubernetes server exposes the following tools:
 - `exec_in_pod` - Executes a command in a specified pod and container
 - `get_pod_logs` - Retrieves logs from a specified pod, with options for container, line count, and previous instance
 
-### PDF Server Setup
-
-The PDF server provides comprehensive PDF document processing capabilities and requires no additional environment variables or external dependencies beyond the Node.js packages already included in the project.
-
-The server is ready to use immediately after installation and supports:
-
-- Text extraction from PDF documents
-- Form field reading and writing
-- PDF generation and modification
-- Base64 encoding/decoding for web integration
-
-#### Available PDF Tools
-
-The PDF server exposes the following tools:
+### PDF Server Tools
 
 - `read_pdf` - Extracts text content and form field data from PDF documents
 
-  - **Parameters:**
-    - `input` (string): PDF file path or base64 encoded PDF content
-  - **Returns:** JSON object containing:
-    - `success`: Boolean indicating operation success
-    - `pageCount`: Number of pages in the PDF
-    - `text`: Extracted text content from all pages
-    - `formFields`: Object containing form field names and values (if any)
-    - `hasFormFields`: Boolean indicating if the PDF contains fillable forms
-    - `metadata`: Additional information about the parsing process
+  - **Parameters:** `input` (string) - PDF file path or base64 encoded PDF content
+  - **Returns:** JSON with success status, page count, extracted text, form fields, and metadata
 
 - `write_pdf` - Creates new PDFs or modifies existing ones with content and form field updates
   - **Parameters:**
-    - `content` (object): Content to write to PDF
-      - `text` (optional string): Text content to add to new PDF
-      - `formFields` (optional object): Form fields to update as key-value pairs
-    - `templatePdf` (optional string): Template PDF file path or base64 content to modify
-    - `outputPath` (optional string): Output file path (if not provided, returns base64)
-  - **Returns:** JSON object containing:
-    - `success`: Boolean indicating operation success
-    - `outputPath`: File path where PDF was saved (if outputPath provided)
-    - `hasBase64`: Boolean indicating if base64 data is included
-    - `base64Length`: Length of base64 data (if applicable)
-    - `base64`: Base64 encoded PDF data (if no outputPath specified)
-
-#### PDF Server Usage Examples
-
-**Reading a PDF file:**
-
-```javascript
-// Read from file path
-{
-  "input": "/path/to/document.pdf"
-}
-
-// Read from base64 data
-{
-  "input": "data:application/pdf;base64,JVBERi0xLjQK..."
-}
-```
-
-**Creating a new PDF with text:**
-
-```javascript
-{
-  "content": {
-    "text": "Hello World!\n\nThis is a multi-page document that will be automatically formatted."
-  },
-  "outputPath": "/path/to/output.pdf"
-}
-```
-
-**Filling out PDF forms:**
-
-```javascript
-{
-  "content": {
-    "formFields": {
-      "name": "John Doe",
-      "email": "john@example.com",
-      "date": "2024-01-01"
-    }
-  },
-  "templatePdf": "/path/to/form-template.pdf",
-  "outputPath": "/path/to/filled-form.pdf"
-}
-```
-
-**Working with base64 (web integration):**
-
-```javascript
-// Returns base64 data instead of saving to file
-{
-  "content": {
-    "text": "Document content"
-  }
-  // No outputPath specified - returns base64 data
-}
-```
+    - `content` (object) - Content to write (text and/or form fields)
+    - `templatePdf` (optional string) - Template PDF file path or base64 content
+    - `outputPath` (optional string) - Output file path (returns base64 if not provided)
+  - **Returns:** JSON with success status, output path, and base64 data (if applicable)
 
 ## Running the Servers
 
