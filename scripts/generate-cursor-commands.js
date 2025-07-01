@@ -65,25 +65,31 @@ node ${server.jsPath}
   console.log("\n===== CURSOR IDE SETUP INSTRUCTIONS =====\n");
   console.log("To use these MCP servers in Cursor IDE:");
   console.log("1. Open Cursor IDE");
-  console.log("2. Go to Settings > AI > External Models");
-  console.log('3. Click "Add Model"');
-  console.log("4. Use the following configurations:\n");
+  console.log("2. Go to Cursor Settings > Features > Model Context Protocol");
+  console.log("3. Edit the mcp.json file or paste this configuration:");
+  console.log("4. Add the following to your mcp.json file under mcpServers:\n");
 
-  serverScripts.forEach((server) => {
+  console.log("```json");
+  console.log('"mcpServers": {');
+
+  serverScripts.forEach((server, index) => {
     const scriptName = `cursor-${server.serverName}-server.sh`;
     const absoluteScriptPath = path.join(workspacePath, scriptName);
+    const isLast = index === serverScripts.length - 1;
 
-    console.log(`----- ${server.serverName.toUpperCase()} SERVER -----`);
-    console.log(`Name: ${server.serverName} MCP Server`);
-    console.log("Connection Type: Custom Command");
-    console.log(`Command: ${absoluteScriptPath}`);
-    console.log("");
+    console.log(`  "${server.serverName}": {`);
+    console.log(`    "command": "${absoluteScriptPath}",`);
+    console.log(`    "args": []`);
+    console.log(`  }${isLast ? "" : ","}`);
   });
 
+  console.log("}");
+  console.log("```\n");
+
   console.log(
-    "After adding these configurations, you can select any of these servers"
+    "After adding these configurations, restart Cursor IDE and the MCP servers"
   );
-  console.log("from the AI model dropdown in Cursor IDE.\n");
+  console.log("will be available for use in the composer.\n");
 }
 
 // Run the function
