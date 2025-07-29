@@ -56,3 +56,6 @@ coverage/
 *.temp
 .cache/
 tmp/ 
+
+# unsupported formats 
+*.pdf
