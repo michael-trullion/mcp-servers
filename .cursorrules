@@ -1,0 +1,167 @@
+# MCP Servers Project Rules
+
+This project contains multiple Model Context Protocol (MCP) servers for Cursor IDE integration.
+
+## Project Structure
+
+- `src/servers/`: Individual MCP server implementations
+- `src/template/`: Reusable template for creating new servers
+- `scripts/`: Automation scripts for setup and deployment
+- Shell scripts for Cursor IDE integration are auto-generated
+
+## Core MCP Server Patterns
+
+### 1. Server Architecture
+Every MCP server must:
+- Import `McpServer` from `@modelcontextprotocol/sdk/server/mcp.js`
+- Use `StdioServerTransport` for Cursor IDE communication
+- Export default server instance for testing/imports
+- Use `process.argv[1] === new URL(import.meta.url).pathname` for direct execution
+
+### 2. Tool Definition Standards
+- Use Zod for parameter validation with descriptive messages
+- Parameter names in `snake_case`
+- Tool names follow patterns: `get_*`, `list_*`, `create_*`, `execute_*`
+- Optional namespace prefix: `mcp__` for core operations
+
+### 3. Response Format (CRITICAL)
+```typescript
+// Success response
+return {
+  content: [
+    { type: "text", text: "Human-readable summary" },
+    { type: "text", text: JSON.stringify(data, null, 2) },
+  ],
+};
+
+// Error response  
+return {
+  content: [{ type: "text", text: `Error: ${message}` }],
+  isError: true,
+};
+```
+
+Never use `type: "json"` or return raw objects.
+
+### 4. Configuration Patterns
+- Use `dotenv` for environment variable loading
+- Support demo/fallback mode when external services unavailable
+- Environment variables: `{SERVICE}_{SETTING}` (uppercase)
+- Validate required configuration with helpful error messages
+
+### 5. Error Handling
+- Wrap tool implementations in try-catch blocks
+- Log errors to console for debugging
+- Return user-friendly error messages
+- Use `isError: true` flag for error responses
+
+### 6. Process Lifecycle
+Always include signal handlers:
+```typescript
+process.on("SIGINT", async () => {
+  console.log("Shutting down...");
+  await cleanup();
+  process.exit(0);
+});
+```
+
+## File Structure Requirements
+
+Each server must have:
+- `{server-name}.ts` - Main implementation
+- `types.ts` - TypeScript type definitions  
+- `README.md` - Documentation with tools, parameters, examples
+- `{server-name}-api.ts` - External service logic (if applicable)
+
+## Integration Requirements
+
+When adding new servers:
+1. Add to `src/index.ts` servers array
+2. Add to `src/run-all.ts` servers array
+3. Add npm scripts to `package.json`:
+   - `dev:{server}`: Development mode with ts-node
+   - `start:{server}`: Production mode with compiled JS
+4. Run `npm run setup` to generate Cursor integration scripts
+
+## Documentation Standards
+
+### README.md Structure
+- Features list
+- Tool documentation with parameters and returns
+- Configuration requirements
+- Usage examples
+- Dependencies
+
+### Parameter Documentation
+- Clear descriptions with examples
+- Specify defaults for optional parameters
+- Include validation constraints
+- Use realistic examples in descriptions
+
+## Development Workflow
+
+1. Create server directory: `mkdir -p src/servers/new-server`
+2. Implement core files using existing servers as reference
+3. Register server in index files and package.json
+4. Test with `npm run dev -- new-server`
+5. Build and test production: `npm run build && npm run start:new-server`
+6. Generate integration: `npm run setup`
+7. Test in Cursor IDE with generated configuration
+
+## Common Patterns by Server Type
+
+### Database Servers (like postgres-server)
+- Connection pooling with cleanup
+- Demo mode with mock data
+- Parameterized queries for security
+- Transaction support where needed
+
+### API Servers (like kubernetes-server)  
+- Separate API layer in `*-api.ts`
+- Client configuration from environment
+- Resource management (connections, auth)
+- Namespace/scope parameter patterns
+
+### Processing Servers (like pdf-server)
+- Input validation for file paths vs base64
+- Multiple output formats (file vs base64)
+- Processing result metadata
+- Stream handling for large files
+
+## TypeScript Configuration
+
+Project uses ES modules with:
+- `"type": "module"` in package.json
+- `"module": "NodeNext"` in tsconfig.json
+- `.js` extensions in imports for compiled output
+- `--loader ts-node/esm` for development
+
+## Testing and Validation
+
+Before production:
+- [ ] Server starts without errors
+- [ ] All tools accept expected parameters
+- [ ] Error cases return proper error responses
+- [ ] Demo mode works when external services unavailable
+- [ ] Cursor IDE integration script generated correctly
+- [ ] Documentation includes all tools and parameters
+
+## Anti-Patterns to Avoid
+
+- Don't use unsupported response content types
+- Don't return raw objects without text wrapper
+- Don't skip parameter validation with Zod
+- Don't forget error handling with isError flag
+- Don't hardcode paths or configuration
+- Don't skip process signal handlers
+- Don't forget to export default server instance
+
+## Cursor IDE Integration
+
+Generated shell scripts handle:
+- Working directory setup
+- Build process execution
+- Server startup with proper stdio
+- Absolute path resolution for configuration
+
+This project prioritizes consistency, reliability, and seamless Cursor IDE integration. 
