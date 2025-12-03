@@ -22,6 +22,11 @@ const servers = [
     displayName: "PDF Server",
     path: join(__dirname, "servers/lease-pdf-server/pdf-server.ts"),
   },
+  {
+    name: "redash",
+    displayName: "Redash Server",
+    path: join(__dirname, "servers/redash-server/redash-server.ts"),
+  },
   // Add more servers here as they are created
 ];
 
