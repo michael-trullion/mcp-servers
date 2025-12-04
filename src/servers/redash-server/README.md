@@ -1,21 +1,28 @@
 # Redash MCP Server
 
-An MCP (Model Context Protocol) server for integrating Redash with Cursor IDE. This server provides tools to interact with Redash's API for managing queries (read-only) and dashboards (read/write).
+An MCP (Model Context Protocol) server for integrating Redash with Cursor IDE. This server provides tools to interact with Redash's API for managing queries, dashboards, and widgets.
 
 ## Features
 
-- **Query Management (Read-Only)**
+- **Query Management**
   - List and search queries
   - Get query details and SQL
+  - Create new queries with SQL
+  - Update existing queries (name, SQL, description, tags)
+  - Fork (duplicate) existing queries
   - Execute queries with parameter support
   - Monitor async job status
   - Retrieve query results in JSON or CSV format
 
-- **Dashboard Management (Read/Write)**
+- **Dashboard Management**
   - List and view dashboards
   - Create new dashboards
   - Update dashboard properties
-  - Archive (delete) dashboards
+
+- **Widget Management**
+  - Add visualizations from existing queries to dashboards
+  - Add text widgets to dashboards
+  - Update widget position and size
 
 ## Configuration
 
@@ -41,7 +48,7 @@ Redash supports two types of API keys:
 
 ## Tools
 
-### Query Tools (Read-Only)
+### Query Tools
 
 #### `list_queries`
 
@@ -129,7 +136,76 @@ Retrieve results from a completed query.
 
 ---
 
-### Dashboard Tools (Read/Write)
+#### `fork_query`
+
+Fork (duplicate) an existing query. Creates a copy with the same SQL.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `query_id` | number | Yes | The ID of the query to fork |
+
+**Example:**
+```
+Fork query with ID 42 to create a copy
+```
+
+---
+
+#### `create_query`
+
+Create a new query with SQL.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | string | Yes | Name for the new query |
+| `query` | string | Yes | The SQL query to execute |
+| `data_source_id` | number | Yes | ID of the data source |
+| `description` | string | No | Optional description |
+| `is_draft` | boolean | No | Draft status (default: true) |
+| `tags` | string[] | No | Optional tags |
+
+**Example:**
+```typescript
+{
+  "name": "Active Users Count",
+  "query": "SELECT COUNT(*) as count FROM users WHERE active = true",
+  "data_source_id": 1,
+  "description": "Counts all active users",
+  "tags": ["users", "metrics"]
+}
+```
+
+---
+
+#### `update_query`
+
+Update an existing query's properties or SQL.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `query_id` | number | Yes | The query ID to update |
+| `name` | string | No | New name |
+| `query` | string | No | New SQL query |
+| `description` | string | No | New description |
+| `is_draft` | boolean | No | Draft status |
+| `is_archived` | boolean | No | Archive status |
+| `tags` | string[] | No | New tags |
+
+**Example:**
+```typescript
+{
+  "query_id": 42,
+  "name": "Active Users Count - Updated",
+  "query": "SELECT COUNT(*) as count FROM users WHERE active = true AND created_at > '2024-01-01'"
+}
+```
+
+---
+
+### Dashboard Tools
 
 #### `list_dashboards`
 
@@ -182,14 +258,63 @@ Update an existing dashboard.
 
 ---
 
-#### `delete_dashboard`
+### Widget Tools
 
-Archive a dashboard (soft delete).
+#### `add_widget_to_dashboard`
+
+Add a visualization or text widget to a dashboard.
 
 **Parameters:**
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
-| `slug` | string | Yes | Dashboard slug to archive |
+| `dashboard_id` | number | Yes | The dashboard ID |
+| `visualization_id` | number | No | Visualization ID to add (from existing query) |
+| `text` | string | No | Text content for text widget |
+| `width` | number | No | Widget width in grid units |
+| `options` | object | No | Widget options including position |
+
+Note: Either `visualization_id` or `text` must be provided.
+
+**Example (add visualization):**
+```typescript
+{
+  "dashboard_id": 123,
+  "visualization_id": 456,
+  "options": {
+    "position": {
+      "col": 0,
+      "row": 0,
+      "sizeX": 3,
+      "sizeY": 2
+    }
+  }
+}
+```
+
+**Example (add text widget):**
+```typescript
+{
+  "dashboard_id": 123,
+  "text": "## Sales Summary\nThis section shows key metrics.",
+  "width": 2
+}
+```
+
+---
+
+#### `update_widget`
+
+Update an existing widget's position, size, or text.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `widget_id` | number | Yes | The widget ID to update |
+| `text` | string | No | New text (for text widgets) |
+| `width` | number | No | New width in grid units |
+| `options` | object | No | Widget options including position |
+
+---
 
 ## Usage Examples
 
@@ -208,20 +333,57 @@ Archive a dashboard (soft delete).
 }
 ```
 
-### Create and Update a Dashboard
+### Create a Dashboard and Add Widgets
 
 ```typescript
-// Create a new dashboard
+// 1. Create a new dashboard
 {
   "name": "Sales Overview",
   "tags": ["sales", "2024"]
 }
 
-// Update the dashboard (use ID from create response)
+// 2. Add a visualization from an existing query
+// First, get the query to find its visualization IDs
+{
+  "query_id": 42
+}
+
+// 3. Add the visualization to the dashboard
 {
   "dashboard_id": 123,
-  "name": "Sales Overview - Q4",
-  "dashboard_filters_enabled": true
+  "visualization_id": 456,
+  "options": {
+    "position": { "col": 0, "row": 0, "sizeX": 3, "sizeY": 2 }
+  }
+}
+
+// 4. Add a text header
+{
+  "dashboard_id": 123,
+  "text": "## Monthly Sales Report"
+}
+```
+
+### Fork a Query
+
+```typescript
+// Fork query 42 to create your own copy
+{
+  "query_id": 42
+}
+// Returns a new query with the same SQL that you own
+```
+
+### Create a New Query
+
+```typescript
+// Create a query to count users by status
+{
+  "name": "Users by Status",
+  "query": "SELECT status, COUNT(*) as count FROM users GROUP BY status",
+  "data_source_id": 1,
+  "description": "Breakdown of users by their current status",
+  "tags": ["users", "analytics"]
 }
 ```
 

@@ -3,6 +3,8 @@ import {
   RedashConfig,
   RedashQuery,
   PaginatedQueries,
+  CreateQueryRequest,
+  UpdateQueryRequest,
   QueryExecutionRequest,
   QueryExecutionResponse,
   RedashJob,
@@ -11,6 +13,9 @@ import {
   PaginatedDashboards,
   CreateDashboardRequest,
   UpdateDashboardRequest,
+  CreateWidgetRequest,
+  UpdateWidgetRequest,
+  DashboardWidget,
   JOB_STATUS_NAMES,
   JobStatus,
 } from "./types.js";
@@ -108,6 +113,45 @@ export async function listQueries(
  */
 export async function getQuery(queryId: number): Promise<RedashQuery> {
   return redashFetch<RedashQuery>(`/api/queries/${queryId}`);
+}
+
+/**
+ * Fork (duplicate) an existing query
+ * Creates a copy of the query with the same SQL without requiring SQL to be written
+ * @param queryId Query ID to fork
+ */
+export async function forkQuery(queryId: number): Promise<RedashQuery> {
+  return redashFetch<RedashQuery>(`/api/queries/${queryId}/fork`, {
+    method: "POST",
+  });
+}
+
+/**
+ * Create a new query
+ * @param data Query creation data including name, SQL, and data source
+ */
+export async function createQuery(
+  data: CreateQueryRequest
+): Promise<RedashQuery> {
+  return redashFetch<RedashQuery>("/api/queries", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Update an existing query
+ * @param queryId Query ID to update
+ * @param data Query update data
+ */
+export async function updateQuery(
+  queryId: number,
+  data: UpdateQueryRequest
+): Promise<RedashQuery> {
+  return redashFetch<RedashQuery>(`/api/queries/${queryId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
 }
 
 /**
@@ -311,13 +355,35 @@ export async function updateDashboard(
   });
 }
 
+// ============================================
+// Widget API
+// ============================================
+
 /**
- * Archive (delete) a dashboard
- * @param slug Dashboard slug
+ * Create a widget (add visualization to dashboard)
+ * @param data Widget creation data
  */
-export async function deleteDashboard(slug: string): Promise<void> {
-  await redashFetch<void>(`/api/dashboards/${slug}`, {
-    method: "DELETE",
+export async function createWidget(
+  data: CreateWidgetRequest
+): Promise<DashboardWidget> {
+  return redashFetch<DashboardWidget>("/api/widgets", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Update an existing widget
+ * @param widgetId Widget ID
+ * @param data Widget update data
+ */
+export async function updateWidget(
+  widgetId: number,
+  data: UpdateWidgetRequest
+): Promise<DashboardWidget> {
+  return redashFetch<DashboardWidget>(`/api/widgets/${widgetId}`, {
+    method: "POST",
+    body: JSON.stringify(data),
   });
 }
 

@@ -64,6 +64,28 @@ export interface PaginatedQueries {
   results: RedashQuery[];
 }
 
+export interface CreateQueryRequest {
+  name: string;
+  query: string;
+  data_source_id: number;
+  description?: string;
+  schedule?: QuerySchedule;
+  is_draft?: boolean;
+  tags?: string[];
+  options?: QueryOptions;
+}
+
+export interface UpdateQueryRequest {
+  name?: string;
+  query?: string;
+  description?: string;
+  schedule?: QuerySchedule | null;
+  is_draft?: boolean;
+  is_archived?: boolean;
+  tags?: string[];
+  options?: QueryOptions;
+}
+
 // ============================================
 // Query Execution Types
 // ============================================
@@ -178,15 +200,15 @@ export interface WidgetOptions {
 }
 
 export interface WidgetPosition {
-  autoHeight: boolean;
-  sizeX: number;
-  sizeY: number;
-  minSizeX: number;
-  maxSizeX: number;
-  minSizeY: number;
-  maxSizeY: number;
-  col: number;
-  row: number;
+  autoHeight?: boolean;
+  sizeX?: number;
+  sizeY?: number;
+  minSizeX?: number;
+  maxSizeX?: number;
+  minSizeY?: number;
+  maxSizeY?: number;
+  col?: number;
+  row?: number;
 }
 
 export interface PaginatedDashboards {
@@ -209,6 +231,24 @@ export interface UpdateDashboardRequest {
   layout?: unknown[];
   dashboard_filters_enabled?: boolean;
   version?: number;
+}
+
+// ============================================
+// Widget Types
+// ============================================
+
+export interface CreateWidgetRequest {
+  dashboard_id: number;
+  visualization_id?: number;
+  text?: string;
+  options?: WidgetOptions;
+  width?: number;
+}
+
+export interface UpdateWidgetRequest {
+  text?: string;
+  options?: WidgetOptions;
+  width?: number;
 }
 
 // ============================================
