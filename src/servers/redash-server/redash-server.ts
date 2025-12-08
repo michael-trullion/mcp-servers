@@ -8,11 +8,270 @@ import { QueryParameterValue, DateRangeValue } from "./types.js";
 // Load environment variables
 config();
 
+const allowedEnvs = ["prod", "prod-eu", "azure", "azure-dev", "dev"] as const;
+const envOptions = allowedEnvs.join(" | ");
+type AllowedEnv = (typeof allowedEnvs)[number];
+
+// Small Levenshtein helper for fuzzy env normalization
+const levenshteinDistance = (a: string, b: string) => {
+  const dp: number[][] = Array.from({ length: a.length + 1 }, (_, i) =>
+    Array.from({ length: b.length + 1 }, (_, j) =>
+      i === 0 ? j : j === 0 ? i : 0
+    )
+  );
+
+  for (let i = 1; i <= a.length; i++) {
+    for (let j = 1; j <= b.length; j++) {
+      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
+      dp[i][j] = Math.min(
+        dp[i - 1][j] + 1, // deletion
+        dp[i][j - 1] + 1, // insertion
+        dp[i - 1][j - 1] + cost // substitution
+      );
+    }
+  }
+
+  return dp[a.length][b.length];
+};
+
+const normalizeEnv = (
+  value?: string
+): { canonical?: AllowedEnv; normalizedFrom?: string } => {
+  if (!value) return { canonical: undefined, normalizedFrom: undefined };
+
+  const trimmed = value.trim();
+  if (!trimmed) return { canonical: undefined, normalizedFrom: undefined };
+
+  const normalized = trimmed.toLowerCase().replace(/[\s_]+/g, "-");
+  const direct = allowedEnvs.find((env) => env === normalized);
+  if (direct) {
+    return {
+      canonical: direct,
+      normalizedFrom: direct === trimmed ? undefined : trimmed,
+    };
+  }
+
+  let best: { env: AllowedEnv; distance: number } | undefined;
+  for (const candidate of allowedEnvs) {
+    const distance = levenshteinDistance(normalized, candidate);
+    if (!best || distance < best.distance) {
+      best = { env: candidate, distance };
+    }
+  }
+
+  // Allow a small edit distance to auto-correct obvious typos
+  if (best && best.distance <= 3) {
+    return { canonical: best.env, normalizedFrom: trimmed };
+  }
+
+  return { canonical: undefined, normalizedFrom: undefined };
+};
+
 // Create an MCP server
 const server = new McpServer({
   name: "Redash Server",
   version: "1.0.0",
 });
+
+// ============================================
+// Prompt Templates
+// ============================================
+
+server.prompt(
+  "redash_query_planner",
+  {
+    goal: z
+      .string()
+      .optional()
+      .describe("User goal or question for the query/dashboard"),
+    env: z
+      .string()
+      .optional()
+      .describe(
+        "Target environment; normalized to closest match (case-insensitive) or inferred if missing"
+      ),
+    databases: z
+      .string()
+      .optional()
+      .describe(
+        "Databases or data sources (comma-separated). If missing, infer from env/prefix and goal."
+      ),
+    widgets: z
+      .string()
+      .optional()
+      .describe("Preferred widgets/visualizations (comma-separated)."),
+    notes: z
+      .string()
+      .optional()
+      .describe("Extra user constraints, filters, or sorting preferences"),
+  },
+  ({ goal, env, databases, widgets, notes }) => {
+    const toList = (value?: string) =>
+      value
+        ?.split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    const dbList = toList(databases);
+    const widgetList = toList(widgets);
+
+    const envResult = normalizeEnv(env);
+    const envLine = envResult.canonical
+      ? `Env: ${envResult.canonical} (locked${
+          envResult.normalizedFrom
+            ? `; normalized from "${envResult.normalizedFrom}"`
+            : ""
+        }).`
+      : env
+      ? `Env provided: ${env} (unrecognized; I'll infer ${envOptions} and pick the best fit).`
+      : `Env? ${envOptions} (case-insensitive; if misspelled I'll choose the closest). I can pick.`;
+    const dbLine = dbList?.length
+      ? `Databases/data sources: ${dbList.join(", ")} (locked).`
+      : "Databases/data sources? If unknown I'll infer by env/prefix and explore schemas.";
+    const widgetLine = widgetList?.length
+      ? `Widgets: ${widgetList.join(", ")} (prefer these).`
+      : "Widgets? table/counter/line/bar/pie/etc. If none, I'll propose.";
+    const goalLine = goal
+      ? `Goal: ${goal}.`
+      : "Goal/question? What do you need to know or build?";
+    const notesLine = notes
+      ? `Notes: ${notes}.`
+      : "Any filters/time range/joins/sorting? Your instructions override mine.";
+
+    const promptBody = [
+      "Redash assistant for queries/dashboards. I stay concise and transparent; your inputs override defaults.",
+      goalLine,
+      envLine,
+      dbLine,
+      widgetLine,
+      notesLine,
+      `Env handling: case-insensitive; if a value is close to ${envOptions}, I'll choose the best fit.`,
+      "Data selection: pick only data sources/tables/columns you can actually see or infer from schema inspection; avoid guessing unseen fields. If unsure, explore schema first, then propose.",
+      "Plan I'll share: map env→data sources (by prefix), gather tables/filters/time, explore schemas if unsure, draft SQL + params, propose dashboard/widgets/layout.",
+      "Query hygiene: do NOT create multiple temp queries; reuse/update a single scratch query if one is required instead of creating new ones.",
+      "Answer now: 1) env? 2) data sources/DBs? 3) goal/time/filter/joins? 4) widgets? 5) other constraints? If unsure, I'll explore and complete.",
+    ].join("\n");
+
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: promptBody,
+          },
+        },
+      ],
+    };
+  }
+);
+
+server.prompt(
+  "redash_dashboard_planner",
+  {
+    name: z
+      .string()
+      .optional()
+      .describe("Dashboard name/title"),
+    env: z
+      .string()
+      .optional()
+      .describe(
+        "Target environment; normalized to closest match (case-insensitive) or inferred if missing"
+      ),
+    data_sources: z
+      .string()
+      .optional()
+      .describe("Data sources or DBs (comma-separated); inferred if missing"),
+    widgets: z
+      .string()
+      .optional()
+      .describe("Preferred widgets/layout blocks (comma-separated)"),
+    goal: z
+      .string()
+      .optional()
+      .describe("Business question(s) to answer"),
+    filters: z
+      .string()
+      .optional()
+      .describe("Key filters/time ranges/segments (comma-separated)"),
+    notes: z
+      .string()
+      .optional()
+      .describe("Other constraints; user instructions override defaults"),
+  },
+  ({ name, env, data_sources, widgets, goal, filters, notes }) => {
+    const toList = (value?: string) =>
+      value
+        ?.split(",")
+        .map((item) => item.trim())
+        .filter(Boolean);
+
+    const dsList = toList(data_sources);
+    const widgetList = toList(widgets);
+    const filterList = toList(filters);
+
+    const envResult = normalizeEnv(env);
+    const envLine = envResult.canonical
+      ? `Env: ${envResult.canonical} (locked${
+          envResult.normalizedFrom
+            ? `; normalized from "${envResult.normalizedFrom}"`
+            : ""
+        }).`
+      : env
+      ? `Env provided: ${env} (unrecognized; I'll infer ${envOptions} and pick the best fit).`
+      : `Env? ${envOptions} (case-insensitive; if misspelled I'll choose the closest). I can pick.`;
+    const dsLine = dsList?.length
+      ? `Data sources: ${dsList.join(", ")} (locked).`
+      : "Data sources? If unknown I'll infer by env/prefix and explore schemas.";
+    const widgetLine = widgetList?.length
+      ? `Widgets/layout: ${widgetList.join(", ")} (prefer these).`
+      : "Widgets/layout? table/counter/line/bar/pie/text/maps. If none, I'll propose.";
+    const goalLine = goal
+      ? `Goal: ${goal}.`
+      : "Goal? What should this dashboard answer?";
+    const filterLine = filterList?.length
+      ? `Filters/time/segments: ${filterList.join(", ")}.`
+      : "Filters/time/segments? If none, I'll propose sensible defaults.";
+    const notesLine = notes
+      ? `Notes: ${notes}.`
+      : "Any joins/grouping/sorting/owners/refresh cadence? Your instructions override defaults.";
+    const nameLine = name ? `Name: ${name} (locked).` : "Name? I can propose.";
+
+    const promptBody = [
+      "Redash dashboard assistant. I stay concise and transparent; your inputs override defaults.",
+      nameLine,
+      goalLine,
+      envLine,
+      dsLine,
+      widgetLine,
+      filterLine,
+      notesLine,
+      `Env handling: case-insensitive; if a value is close to ${envOptions}, I'll choose the best fit.`,
+      "Data selection: choose only data sources/tables/columns you can actually access or confirm via schema exploration; avoid guessing unseen fields. Explore schema first when unsure, then propose queries and visuals accordingly.",
+      "Plan I'll share: map env→data sources (prefix), explore schemas if unsure, pick tables/joins/filters/time, draft queries + visualizations. Prefer reusing patterns from existing published dashboards (sizes/layout/visual types) when proposing placement.",
+      "Visualization rule: table is fallback only. Prefer line/area for time trends, bar/stacked for rankings/status splits, pie only for small categorical splits, counter/KPI for single numbers, box/percentiles for duration/latency. Always pick the best-fit visualization for the data/goal even if it’s slower or harder to configure; only choose table when no other visualization is appropriate or when explicitly requested. Favor successful patterns seen in existing dashboards.",
+      "Query hygiene: avoid creating multiple temp queries; reuse/update a single scratch query if execution requires one—do not create new queries per run.",
+      "Execution guardrail: add widgets sequentially (one-by-one) with explicit position/size; avoid parallel add_widget calls to prevent Redash 500s. Use dimensions/positions inspired by existing published dashboards when available.",
+      "Reliability guardrail: execute or validate queries before placing them; if a query fails or is missing data, do NOT add its widget until it works.",
+      "Execution guardrail: add widgets sequentially (one-by-one) with explicit position/size; avoid parallel add_widget calls to prevent Redash 500s.",
+      "Always look at existing dashboards/examples first for layout, sizing, and visualization choices before proposing new placements.",
+      "Answer now: 1) name? 2) env? 3) data sources/DBs? 4) goal? 5) widgets/layout? 6) filters/time/segments? 7) other constraints? If unsure, I'll explore and complete.",
+    ].join("\n");
+
+    return {
+      messages: [
+        {
+          role: "user",
+          content: {
+            type: "text",
+            text: promptBody,
+          },
+        },
+      ],
+    };
+  }
+);
 
 // ============================================
 // Query Tools (Read-Only)
@@ -966,13 +1225,21 @@ server.tool(
         };
       }
 
-      const widget = await RedashAPI.createWidget({
-        dashboard_id,
-        visualization_id,
-        text,
-        width,
-        options,
-      });
+    // Redash can 500 if width/options are missing; provide safe defaults
+    const safeWidth = width ?? 1;
+    const safeOptions =
+      options ?? {
+        parameterMappings: {},
+        position: { autoHeight: true },
+      };
+
+    const widget = await RedashAPI.createWidget({
+      dashboard_id,
+      visualization_id,
+      text,
+      width: safeWidth,
+      options: safeOptions,
+    });
 
       const widgetType = visualization_id ? "visualization" : "text";
       return {

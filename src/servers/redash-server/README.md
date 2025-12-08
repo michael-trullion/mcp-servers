@@ -39,6 +39,36 @@ npx trullion-redash-mcp@1.0.2
   - Add text widgets to dashboards
   - Update widget position and size
 
+## Prompts
+
+### `redash_query_planner`
+
+Concise helper that asks for environment, data sources, and widget needs, then proposes queries/dashboards. User input always overrides defaults; if unsure, it will explore relevant schemas and suggest an approach.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `goal` | string | No | User goal or question for the query/dashboard |
+| `env` | "prod" \| "prod-eu" \| "azure" \| "azure-dev" \| "dev" | No | Target environment (case-insensitive; auto-normalizes to the closest match); inferred if missing |
+| `databases` | string[] | No | Databases/data sources to use; inferred from env/prefix if omitted |
+| `widgets` | string[] | No | Preferred widget/visualization types; defaults proposed if missing |
+| `notes` | string | No | Extra constraints (filters, time ranges, joins, sorting, instructions) |
+
+### `redash_dashboard_planner`
+
+Guides users through creating a dashboard: environment, data sources, widgets/layout, filters/time, and goals. Stays concise; user inputs override defaults. If unsure, it will explore schemas, suggest queries/visuals, and propose layout.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `name` | string | No | Dashboard name/title |
+| `env` | "prod" \| "prod-eu" \| "azure" \| "azure-dev" \| "dev" | No | Target environment (case-insensitive; auto-normalizes to the closest match); inferred if missing |
+| `data_sources` | string | No | Data sources/DBs (comma-separated); inferred if missing |
+| `widgets` | string | No | Preferred widgets/layout blocks (comma-separated) |
+| `goal` | string | No | Business questions to answer |
+| `filters` | string | No | Filters/time ranges/segments (comma-separated) |
+| `notes` | string | No | Other constraints; user instructions override defaults |
+
 ## Configuration
 
 **Important**: This package does not include any environment variables. You must configure your Redash credentials by setting environment variables in your environment or MCP client configuration.
