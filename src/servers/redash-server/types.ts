@@ -279,6 +279,33 @@ export interface RedashUser {
 }
 
 // ============================================
+// Data Source Types
+// ============================================
+
+export interface RedashDataSource {
+  id: number;
+  name: string;
+  type: string;
+  options: Record<string, unknown>;
+  scheduled_queue_name?: string;
+  queue_name?: string;
+  syntax?: string;
+  paused?: number;
+  paused_reason?: string | null;
+  view_only?: boolean;
+  created_at: string;
+  updated_at: string;
+  user?: RedashUser;
+}
+
+export interface PaginatedDataSources {
+  count: number;
+  page: number;
+  page_size: number;
+  results: RedashDataSource[];
+}
+
+// ============================================
 // API Response Types
 // ============================================
 

@@ -18,6 +18,8 @@ import {
   DashboardWidget,
   CreateVisualizationRequest,
   QueryVisualization,
+  RedashDataSource,
+  PaginatedDataSources,
   JOB_STATUS_NAMES,
   JobStatus,
 } from "./types.js";
@@ -348,6 +350,24 @@ export async function listDashboards(
  */
 export async function getDashboard(slug: string): Promise<RedashDashboard> {
   return redashFetch<RedashDashboard>(`/api/dashboards/${slug}`);
+}
+
+// ============================================
+// Data Source API (Read-Only)
+// ============================================
+
+/**
+ * List all data sources with pagination
+ * @param page Page number (1-based)
+ * @param pageSize Number of results per page
+ */
+export async function listDataSources(
+  page: number = 1,
+  pageSize: number = 25
+): Promise<PaginatedDataSources> {
+  return redashFetch<PaginatedDataSources>(
+    `/api/data_sources?page=${page}&page_size=${pageSize}`
+  );
 }
 
 /**

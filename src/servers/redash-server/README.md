@@ -12,6 +12,10 @@ Or use it ad-hoc without installing:
 ```bash
 npx trullion-redash-mcp
 ```
+You can also pin a version:
+```bash
+npx trullion-redash-mcp@1.0.2
+```
 
 ## Features
 
@@ -53,14 +57,14 @@ export REDASH_API_KEY=your_api_key_here
 
 ### For Cursor IDE
 
-When configuring this server in Cursor IDE, add these environment variables to your MCP server configuration:
+When configuring this server in Cursor IDE, add these environment variables to your MCP server configuration. Using `npx` avoids a local install:
 
 ```json
 {
   "mcpServers": {
     "redash": {
-    "command": "trullion-redash-mcp",
-    "args": [],
+      "command": "npx",
+      "args": ["-y", "trullion-redash-mcp@1.0.2"],
       "env": {
         "REDASH_URL": "https://app.redash.io/your-org",
         "REDASH_API_KEY": "your_api_key_here"
@@ -285,6 +289,38 @@ Create a visualization for an existing query.
 
 ---
 
+### Data Source Tools
+
+#### `list_data_sources`
+
+Get a paginated list of all data sources available in Redash. Data sources represent database connections (PostgreSQL, MySQL, Redshift, etc.) that queries can use.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `page` | number | No | Page number (default: 1) |
+| `page_size` | number | No | Results per page (default: 25) |
+
+**Example:**
+```
+List all data sources, page 1
+```
+
+**Returns:**
+- `count`: Total number of data sources
+- `page`: Current page number
+- `page_size`: Number of results per page
+- `results`: Array of data source objects, each containing:
+  - `id`: Data source ID (used when creating queries)
+  - `name`: Data source name
+  - `type`: Database type (e.g., "pg", "mysql", "redshift")
+  - `options`: Connection configuration (sensitive fields may be hidden)
+  - `created_at`, `updated_at`: Timestamps
+
+**Reference:** [Redash API Documentation](https://redash.io/help/user-guide/integrations-and-api/api/)
+
+---
+
 ### Dashboard Tools
 
 #### `list_dashboards`
@@ -500,6 +536,8 @@ node node_modules/trullion-redash-mcp/dist/index.js
 
 # If installed globally or via npx
 trullion-redash-mcp
+# Or pinned version via npx
+npx trullion-redash-mcp@1.0.2
 ```
 
 ### Development (from source)

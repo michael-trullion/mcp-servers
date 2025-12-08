@@ -618,6 +618,55 @@ server.tool(
 );
 
 // ============================================
+// Data Source Tools (Read-Only)
+// ============================================
+
+// List data sources tool
+server.tool(
+  "list_data_sources",
+  {
+    page: z
+      .number()
+      .optional()
+      .describe("Page number for pagination (default: 1)"),
+    page_size: z
+      .number()
+      .optional()
+      .describe("Number of results per page (default: 25)"),
+  },
+  async ({ page = 1, page_size = 25 }) => {
+    try {
+      const dataSources = await RedashAPI.listDataSources(page, page_size);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Found ${dataSources.count} data sources (showing page ${page} of ${Math.ceil(dataSources.count / page_size)}).`,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(dataSources, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error in list_data_sources handler:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error listing data sources: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// ============================================
 // Dashboard Tools (Read/Write)
 // ============================================
 
