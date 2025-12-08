@@ -64,7 +64,7 @@ When configuring this server in Cursor IDE, add these environment variables to y
   "mcpServers": {
     "redash": {
       "command": "npx",
-      "args": ["-y", "trullion-redash-mcp@1.0.2"],
+      "args": ["-y", "trullion-redash-mcp@latest"],
       "env": {
         "REDASH_URL": "https://app.redash.io/your-org",
         "REDASH_API_KEY": "your_api_key_here"
