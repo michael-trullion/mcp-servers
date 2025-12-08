@@ -29,6 +29,9 @@
   ],
   "author": "",
   "license": "ISC",
+  "workspaces": [
+    "src/servers/redash-server"
+  ],
   "dependencies": {
     "@kubernetes/client-node": "^0.20.0",
     "@modelcontextprotocol/sdk": "^1.7.0",

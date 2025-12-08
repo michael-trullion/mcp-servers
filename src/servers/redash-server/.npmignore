@@ -1,0 +1,36 @@
+# Environment files
+.env
+.env.*
+
+# Source files (only dist should be published)
+*.ts
+!*.d.ts
+tsconfig.json
+
+# Development files
+queries/
+*.sh
+
+# Test files
+test/
+tests/
+*.test.ts
+*.spec.ts
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Build artifacts (keep dist, but ignore intermediate files)
+*.tsbuildinfo
+
+# Git
+.git/
+.gitignore
+
+# Documentation that's not needed in package
+MCP_SERVER_DEVELOPMENT_GUIDE.md
+

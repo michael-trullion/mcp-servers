@@ -1040,7 +1040,7 @@ async function startServer() {
 }
 
 // Start the server if this file is run directly
-if (import.meta.url === new URL(import.meta.url).href) {
+if (process.argv[1] === new URL(import.meta.url).pathname) {
   startServer();
 }
 

@@ -1,6 +1,17 @@
 # Redash MCP Server
 
-An MCP (Model Context Protocol) server for integrating Redash with Cursor IDE. This server provides tools to interact with Redash's API for managing queries, dashboards, and widgets.
+An MCP (Model Context Protocol) server for integrating Redash with Cursor IDE and other MCP clients. This server provides tools to interact with Redash's API for managing queries, dashboards, and widgets.
+
+## Installation
+
+```bash
+npm install trullion-redash-mcp
+```
+
+Or use it ad-hoc without installing:
+```bash
+npx trullion-redash-mcp
+```
 
 ## Features
 
@@ -26,17 +37,42 @@ An MCP (Model Context Protocol) server for integrating Redash with Cursor IDE. T
 
 ## Configuration
 
-Set the following environment variables in your `.env` file:
+**Important**: This package does not include any environment variables. You must configure your Redash credentials by setting environment variables in your environment or MCP client configuration.
+
+Set the following environment variables **before running the server**:
 
 ```bash
 # Required: Your Redash instance URL
-REDASH_URL=https://app.redash.io/your-org
+export REDASH_URL=https://app.redash.io/your-org
 # or for self-hosted:
-# REDASH_URL=https://redash.example.com
+# export REDASH_URL=https://redash.example.com
 
 # Required: Your Redash API key (found on user profile page)
-REDASH_API_KEY=your_api_key_here
+export REDASH_API_KEY=your_api_key_here
 ```
+
+### For Cursor IDE
+
+When configuring this server in Cursor IDE, add these environment variables to your MCP server configuration:
+
+```json
+{
+  "mcpServers": {
+    "redash": {
+    "command": "trullion-redash-mcp",
+    "args": [],
+      "env": {
+        "REDASH_URL": "https://app.redash.io/your-org",
+        "REDASH_API_KEY": "your_api_key_here"
+      }
+    }
+  }
+}
+```
+
+### For Other MCP Clients
+
+Set the environment variables in your shell or process environment before starting the MCP server. The server uses `dotenv` to load variables, but you should primarily set them in your environment to avoid committing secrets.
 
 ### API Key Types
 
@@ -449,17 +485,30 @@ Update an existing widget's position, size, or text.
 
 ## Running the Server
 
-### Development
+### As an npm package
+
+After installation, you can run the server directly:
 
 ```bash
-npm run dev -- redash
+# Make sure environment variables are set
+export REDASH_URL=https://app.redash.io/your-org
+export REDASH_API_KEY=your_api_key_here
+
+# Run the server
+# If installed locally
+node node_modules/trullion-redash-mcp/dist/index.js
+
+# If installed globally or via npx
+trullion-redash-mcp
 ```
 
-### Production
+### Development (from source)
+
+If you're developing the package itself:
 
 ```bash
 npm run build
-npm run start:redash
+npm run start
 ```
 
 ## Dependencies
