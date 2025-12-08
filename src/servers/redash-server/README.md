@@ -549,6 +549,121 @@ npm run build
 npm run start
 ```
 
+## Publishing the Package
+
+When adding new features or making changes to the package, follow these steps to publish an update:
+
+### 1. Make Your Changes
+
+Add your feature, fix, or improvement to the codebase:
+- Update TypeScript files in `src/servers/redash-server/`
+- Add new types in `types.ts` if needed
+- Add new API functions in `redash-api.ts` if needed
+- Register new MCP tools in `redash-server.ts`
+- Update this README with documentation for new features
+
+### 2. Test Locally
+
+Build and test your changes locally:
+
+```bash
+# From the workspace root
+cd /path/to/mcp-servers
+
+# Build the redash-server package
+npm run build --workspace=src/servers/redash-server
+
+# Test the build output
+node src/servers/redash-server/dist/index.js
+```
+
+### 3. Verify Package Contents
+
+Before publishing, verify what will be included in the package:
+
+```bash
+# Dry-run to see what files will be published
+npm pack --workspace=src/servers/redash-server --dry-run
+```
+
+Ensure only the following are included:
+- `dist/` - Compiled JavaScript and TypeScript definitions
+- `README.md` - Documentation
+- `package.json` - Package manifest
+
+**Important**: Verify that no `.env` files, source `.ts` files (except `.d.ts`), or secrets are included.
+
+### 4. Bump Version
+
+Update the version in `package.json`. Use semantic versioning:
+- **Patch** (1.0.2 → 1.0.3): Bug fixes, minor improvements
+- **Minor** (1.0.2 → 1.1.0): New features, backward compatible
+- **Major** (1.0.2 → 2.0.0): Breaking changes
+
+You can use npm version command:
+
+```bash
+# For patch version (recommended for most updates)
+npm version patch --workspace=src/servers/redash-server --no-git-tag-version
+
+# Or manually edit package.json
+```
+
+### 5. Build for Production
+
+Ensure the package is built with the latest changes:
+
+```bash
+npm run build --workspace=src/servers/redash-server
+```
+
+### 6. Publish to npm
+
+Publish the package to npm:
+
+```bash
+# Make sure you're logged in to npm
+npm login
+
+# Publish the workspace package
+npm publish --workspace=src/servers/redash-server --access public
+```
+
+**Note**: If using a scoped package name (like `@scope/package`), you need `--access public`. For unscoped packages, omit this flag.
+
+### 7. Verify Publication
+
+After publishing, verify the package is available:
+
+```bash
+# Check published versions
+npm view trullion-redash-mcp versions
+
+# Test installing the new version
+npm pack --workspace=src/servers/redash-server
+# Or test with npx
+npx trullion-redash-mcp@<new-version>
+```
+
+### 8. Update Documentation
+
+If you added new features, update:
+- This README with tool documentation
+- Any usage examples
+- Version numbers in installation instructions if needed
+
+### Quick Reference
+
+```bash
+# Complete publish workflow
+cd /path/to/mcp-servers
+npm version patch --workspace=src/servers/redash-server --no-git-tag-version
+npm run build --workspace=src/servers/redash-server
+npm pack --workspace=src/servers/redash-server --dry-run  # Verify contents
+npm publish --workspace=src/servers/redash-server --access public
+npm view trullion-redash-mcp versions  # Verify
+```
+
 ## Dependencies
 
 This server uses the following dependencies (already included in the project):
