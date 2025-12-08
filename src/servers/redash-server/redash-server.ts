@@ -521,6 +521,102 @@ server.tool(
   }
 );
 
+// Create visualization tool
+server.tool(
+  "create_visualization",
+  {
+    query_id: z.number().describe("The ID of the query to attach the visualization to"),
+    name: z.string().describe("Name for the visualization"),
+    type: z
+      .string()
+      .describe("Visualization type (e.g., TABLE, CHART, COUNTER, PIE, LINE)"),
+    description: z.string().optional().describe("Optional description"),
+    options: z
+      .record(z.unknown())
+      .optional()
+      .describe("Visualization options/config as a JSON object"),
+  },
+  async ({ query_id, name, type, description, options }) => {
+    try {
+      const visualization = await RedashAPI.createVisualization({
+        query_id,
+        name,
+        type,
+        description,
+        options,
+      });
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Successfully created visualization "${visualization.name}" (ID: ${visualization.id}) on query ${query_id}.`,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(visualization, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error in create_visualization handler:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error creating visualization: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Publish query tool (set is_draft=false)
+server.tool(
+  "publish_query",
+  {
+    query_id: z
+      .number()
+      .describe("The ID of the query to publish (set is_draft to false)"),
+  },
+  async ({ query_id }) => {
+    try {
+      const publishedQuery = await RedashAPI.publishQuery(query_id);
+      const statusText = publishedQuery.is_draft ? "draft" : "published";
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Query "${publishedQuery.name}" (ID: ${publishedQuery.id}) is now ${statusText}.`,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(publishedQuery, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error in publish_query handler:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error publishing query: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
 // ============================================
 // Dashboard Tools (Read/Write)
 // ============================================
@@ -715,6 +811,48 @@ server.tool(
           {
             type: "text",
             text: `Error updating dashboard: ${
+              error instanceof Error ? error.message : String(error)
+            }`,
+          },
+        ],
+        isError: true,
+      };
+    }
+  }
+);
+
+// Publish dashboard tool (set is_draft=false)
+server.tool(
+  "publish_dashboard",
+  {
+    dashboard_id: z
+      .number()
+      .describe("The dashboard ID to publish (set is_draft to false)"),
+  },
+  async ({ dashboard_id }) => {
+    try {
+      const dashboard = await RedashAPI.publishDashboard(dashboard_id);
+      const statusText = dashboard.is_draft ? "draft" : "published";
+
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Dashboard "${dashboard.name}" (ID: ${dashboard.id}) is now ${statusText}.`,
+          },
+          {
+            type: "text",
+            text: JSON.stringify(dashboard, null, 2),
+          },
+        ],
+      };
+    } catch (error) {
+      console.error("Error in publish_dashboard handler:", error);
+      return {
+        content: [
+          {
+            type: "text",
+            text: `Error publishing dashboard: ${
               error instanceof Error ? error.message : String(error)
             }`,
           },

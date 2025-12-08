@@ -57,6 +57,14 @@ export interface QueryVisualization {
   created_at: string;
 }
 
+export interface CreateVisualizationRequest {
+  name: string;
+  type: string;
+  query_id: number;
+  description?: string | null;
+  options?: Record<string, unknown>;
+}
+
 export interface PaginatedQueries {
   count: number;
   page: number;

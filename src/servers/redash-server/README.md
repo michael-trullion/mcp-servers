@@ -205,6 +205,50 @@ Update an existing query's properties or SQL.
 
 ---
 
+#### `publish_query`
+
+Publish a query by setting `is_draft` to `false`.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `query_id` | number | Yes | The query ID to publish |
+
+**Example:**
+```
+Publish query with ID 42
+```
+
+---
+
+#### `create_visualization`
+
+Create a visualization for an existing query.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `query_id` | number | Yes | Query ID to attach the visualization to |
+| `name` | string | Yes | Visualization name |
+| `type` | string | Yes | Visualization type (e.g., TABLE, CHART, COUNTER) |
+| `description` | string | No | Optional description |
+| `options` | object | No | Visualization options/config JSON |
+
+**Example:**
+```typescript
+{
+  "query_id": 123,
+  "name": "Status Distribution",
+  "type": "PIE",
+  "options": {
+    "columnMapping": { "status": "x", "count": "y" },
+    "showDataLabels": true
+  }
+}
+```
+
+---
+
 ### Dashboard Tools
 
 #### `list_dashboards`
@@ -255,6 +299,22 @@ Update an existing dashboard.
 | `is_archived` | boolean | No | Archive status |
 | `tags` | string[] | No | New tags |
 | `dashboard_filters_enabled` | boolean | No | Enable/disable filters |
+
+---
+
+#### `publish_dashboard`
+
+Publish a dashboard by setting `is_draft` to `false`.
+
+**Parameters:**
+| Name | Type | Required | Description |
+|------|------|----------|-------------|
+| `dashboard_id` | number | Yes | Dashboard ID (not slug) |
+
+**Example:**
+```
+Publish dashboard with ID 123
+```
 
 ---
 

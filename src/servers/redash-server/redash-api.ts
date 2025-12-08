@@ -16,6 +16,8 @@ import {
   CreateWidgetRequest,
   UpdateWidgetRequest,
   DashboardWidget,
+  CreateVisualizationRequest,
+  QueryVisualization,
   JOB_STATUS_NAMES,
   JobStatus,
 } from "./types.js";
@@ -152,6 +154,27 @@ export async function updateQuery(
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+/**
+ * Create a visualization for a query
+ * @param data Visualization creation data
+ */
+export async function createVisualization(
+  data: CreateVisualizationRequest
+): Promise<QueryVisualization> {
+  return redashFetch<QueryVisualization>("/api/visualizations", {
+    method: "POST",
+    body: JSON.stringify(data),
+  });
+}
+
+/**
+ * Publish a query (mark as non-draft)
+ * @param queryId Query ID to publish
+ */
+export async function publishQuery(queryId: number): Promise<RedashQuery> {
+  return updateQuery(queryId, { is_draft: false });
 }
 
 /**
@@ -353,6 +376,16 @@ export async function updateDashboard(
     method: "POST",
     body: JSON.stringify(data),
   });
+}
+
+/**
+ * Publish a dashboard (mark as non-draft)
+ * @param dashboardId Dashboard ID to publish
+ */
+export async function publishDashboard(
+  dashboardId: number
+): Promise<RedashDashboard> {
+  return updateDashboard(dashboardId, { is_draft: false });
 }
 
 // ============================================
