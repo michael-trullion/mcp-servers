@@ -3,7 +3,7 @@ import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js"
 import { z } from "zod";
 import { config } from "dotenv";
 import * as RedashAPI from "./redash-api.js";
-import { QueryParameterValue, DateRangeValue } from "./types.js";
+import { QueryParameterValue } from "./types.js";
 
 // Load environment variables
 config();
