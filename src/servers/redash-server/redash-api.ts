@@ -349,7 +349,61 @@ export async function listDashboards(
  * @param slug Dashboard slug
  */
 export async function getDashboard(slug: string): Promise<RedashDashboard> {
-  return redashFetch<RedashDashboard>(`/api/dashboards/${slug}`);
+  const trimmed = slug.trim();
+  const isNumeric = /^\d+$/.test(trimmed);
+
+  // Prefer slug lookup; fall back to numeric ID if provided
+  const slugPath = `/api/dashboards/${encodeURIComponent(trimmed)}`;
+  const idPath = `/api/dashboards/${trimmed}`;
+
+  // Attempt slug or ID directly
+  const primaryPath = isNumeric ? idPath : slugPath;
+  try {
+    return await redashFetch<RedashDashboard>(primaryPath);
+  } catch (primaryError) {
+    // If slug lookup failed and we have a numeric form, bail now
+    if (isNumeric) {
+      const message =
+        primaryError instanceof Error
+          ? primaryError.message
+          : String(primaryError);
+      throw new Error(
+        `Failed to get dashboard (${trimmed}) via ${primaryPath}: ${message}`
+      );
+    }
+
+    // Fallback: search dashboards and retry by ID if found
+    try {
+      const dashboards = await listDashboards(1, 250);
+      const match = dashboards.results?.find(
+        (d) => d.slug === trimmed || d.slug === encodeURIComponent(trimmed)
+      );
+      if (match) {
+        return await redashFetch<RedashDashboard>(`/api/dashboards/${match.id}`);
+      }
+    } catch (secondaryError) {
+      // If listing dashboards fails, include both errors
+      const primaryMsg =
+        primaryError instanceof Error
+          ? primaryError.message
+          : String(primaryError);
+      const secondaryMsg =
+        secondaryError instanceof Error
+          ? secondaryError.message
+          : String(secondaryError);
+      throw new Error(
+        `Failed to get dashboard (${trimmed}); primary: ${primaryMsg}; fallback list: ${secondaryMsg}`
+      );
+    }
+
+    const message =
+      primaryError instanceof Error
+        ? primaryError.message
+        : String(primaryError);
+    throw new Error(
+      `Failed to get dashboard (${trimmed}); slug lookup failed and no match found. Error: ${message}`
+    );
+  }
 }
 
 // ============================================
