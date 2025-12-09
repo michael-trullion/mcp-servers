@@ -1,6 +1,6 @@
 {
   "name": "trullion-redash-mcp",
-  "version": "1.0.5",
+  "version": "1.0.6",
   "description": "MCP server for integrating Redash with Cursor IDE and other MCP clients",
   "type": "module",
   "main": "./dist/index.js",
@@ -15,8 +15,7 @@
     }
   },
   "files": [
-    "dist",
-    "README.md"
+    "dist"
   ],
   "scripts": {
     "build": "tsc",
