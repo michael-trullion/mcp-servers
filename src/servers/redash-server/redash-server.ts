@@ -250,6 +250,8 @@ server.prompt(
       `Env handling: case-insensitive; if a value is close to ${envOptions}, I'll choose the best fit.`,
       "Data selection: choose only data sources/tables/columns you can actually access or confirm via schema exploration; avoid guessing unseen fields. Explore schema first when unsure, then propose queries and visuals accordingly.",
       "",
+      "Tooling available: use describe_visualization_options(type) to see required/optional option keys before creating a visualization. Use it plus query columns to build explicit options (e.g., columnMapping or counterColName).",
+      "",
       "CRITICAL: Before creating any visualizations, inspect existing published dashboards (list_dashboards, get_dashboard) to learn successful patterns: widget sizes, layout positions, visualization types, and column mappings. Reuse these patterns when possible.",
       "",
       "Visualization column mapping (REQUIRED):",
@@ -803,6 +805,103 @@ server.tool(
   }
 );
 
+// Lightweight option "schemas" to guide LLMs (not enforced here)
+const visualizationOptionGuides: Record<string, Record<string, unknown>> = {
+  COUNTER: {
+    required: ["counterColName"],
+    optional: ["rowNumber", "format", "text", "stringDecimalFormat", "suffix"],
+    notes:
+      "Set counterColName (or counterValueColumn). rowNumber default 0. Format like 0,0 or 0.0%.",
+  },
+  CHART: {
+    required: ["columnMapping"],
+    optional: [
+      "globalSeriesType",
+      "series",
+      "xAxis",
+      "yAxis",
+      "legend",
+      "stacking",
+      "sortX",
+    ],
+    notes:
+      "columnMapping must bind columns to roles: { colX: 'x', colY: 'y', optionalSeries: 'series' }. globalSeriesType examples: line, area, column.",
+  },
+  PIVOT: {
+    required: ["rows", "values"],
+    optional: ["columns", "aggregator", "numberFormat"],
+    notes:
+      "rows/columns/values are arrays of column names. aggregator examples: sum, avg, count.",
+  },
+  TABLE: {
+    required: [],
+    optional: ["columns", "order", "filters"],
+    notes: "Table typically needs no options; columns can control visibility/order.",
+  },
+  BOXPLOT: {
+    required: ["x", "y"],
+    optional: [],
+    notes: "x = category/group (string), y = numeric column.",
+  },
+  HEATMAP: {
+    required: ["xAxis", "yAxis", "valueColumn"],
+    optional: [],
+    notes: "xAxis/yAxis are dimension columns; valueColumn is numeric.",
+  },
+  WORD_CLOUD: {
+    required: ["series", "valueColumn"],
+    optional: [],
+    notes: "series = term column (string), valueColumn = numeric weight.",
+  },
+  SANKEY: {
+    required: ["sourceColumn", "targetColumn", "valueColumn"],
+    optional: [],
+    notes: "Columns for source, target, and numeric value/weight.",
+  },
+  COHORT: {
+    required: ["timeColumn", "groupColumn", "valueColumn"],
+    optional: [],
+    notes: "timeColumn (date), groupColumn (string), valueColumn (numeric).",
+  },
+  FUNNEL: {
+    required: ["stageColumn", "valueColumn"],
+    optional: [],
+    notes: "stageColumn (string), valueColumn (numeric counts).",
+  },
+};
+
+// Describe visualization options (guidance only; no enforcement)
+server.tool(
+  "describe_visualization_options",
+  {
+    type: z.string().describe("Visualization type (e.g., COUNTER, CHART, PIVOT)"),
+  },
+  async ({ type }) => {
+    const key = type.toUpperCase();
+    const schema = visualizationOptionGuides[key];
+    if (!schema) {
+      return {
+        content: [
+          {
+            type: "text",
+            text: `No predefined guidance for type "${type}". Supported: ${Object.keys(
+              visualizationOptionGuides
+            ).join(", ")}. For custom/plugin types, inspect existing visualizations via get_visualization.`,
+          },
+        ],
+      };
+    }
+    return {
+      content: [
+        {
+          type: "text",
+          text: `Options guidance for ${key}: ${JSON.stringify(schema, null, 2)}`,
+        },
+      ],
+    };
+  }
+);
+
 // Create visualization tool
 server.tool(
   "create_visualization",
@@ -811,12 +910,16 @@ server.tool(
     name: z.string().describe("Name for the visualization"),
     type: z
       .string()
-      .describe("Visualization type (e.g., TABLE, CHART, COUNTER, PIE, LINE)"),
+      .describe(
+        "Visualization type (e.g., TABLE, CHART, COUNTER, PIE, LINE). Use describe_visualization_options(type) for expected option keys."
+      ),
     description: z.string().optional().describe("Optional description"),
     options: z
       .record(z.unknown())
       .optional()
-      .describe("Visualization options/config as a JSON object"),
+      .describe(
+        "Visualization options/config as JSON. Include explicit mappings (e.g., counterColName, columnMapping). See describe_visualization_options(type)."
+      ),
   },
   async ({ query_id, name, type, description, options }) => {
     try {
