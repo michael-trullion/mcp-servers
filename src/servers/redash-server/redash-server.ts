@@ -8,63 +8,15 @@ import { QueryParameterValue, DateRangeValue } from "./types.js";
 // Load environment variables
 config();
 
-const allowedEnvs = ["prod", "prod-eu", "azure", "azure-dev", "dev"] as const;
-const envOptions = allowedEnvs.join(" | ");
-type AllowedEnv = (typeof allowedEnvs)[number];
-
-// Small Levenshtein helper for fuzzy env normalization
-const levenshteinDistance = (a: string, b: string) => {
-  const dp: number[][] = Array.from({ length: a.length + 1 }, (_, i) =>
-    Array.from({ length: b.length + 1 }, (_, j) =>
-      i === 0 ? j : j === 0 ? i : 0
-    )
-  );
-
-  for (let i = 1; i <= a.length; i++) {
-    for (let j = 1; j <= b.length; j++) {
-      const cost = a[i - 1] === b[j - 1] ? 0 : 1;
-      dp[i][j] = Math.min(
-        dp[i - 1][j] + 1, // deletion
-        dp[i][j - 1] + 1, // insertion
-        dp[i - 1][j - 1] + cost // substitution
-      );
-    }
-  }
-
-  return dp[a.length][b.length];
-};
-
 const normalizeEnv = (
   value?: string
-): { canonical?: AllowedEnv; normalizedFrom?: string } => {
+): { canonical?: string; normalizedFrom?: string } => {
   if (!value) return { canonical: undefined, normalizedFrom: undefined };
 
   const trimmed = value.trim();
   if (!trimmed) return { canonical: undefined, normalizedFrom: undefined };
 
-  const normalized = trimmed.toLowerCase().replace(/[\s_]+/g, "-");
-  const direct = allowedEnvs.find((env) => env === normalized);
-  if (direct) {
-    return {
-      canonical: direct,
-      normalizedFrom: direct === trimmed ? undefined : trimmed,
-    };
-  }
-
-  let best: { env: AllowedEnv; distance: number } | undefined;
-  for (const candidate of allowedEnvs) {
-    const distance = levenshteinDistance(normalized, candidate);
-    if (!best || distance < best.distance) {
-      best = { env: candidate, distance };
-    }
-  }
-
-  // Allow a small edit distance to auto-correct obvious typos
-  if (best && best.distance <= 3) {
-    return { canonical: best.env, normalizedFrom: trimmed };
-  }
-
-  return { canonical: undefined, normalizedFrom: undefined };
+  return { canonical: trimmed, normalizedFrom: undefined };
 };
 
 // Create an MCP server
@@ -123,8 +75,8 @@ server.prompt(
             : ""
         }).`
       : env
-      ? `Env provided: ${env} (unrecognized; I'll infer ${envOptions} and pick the best fit).`
-      : `Env? ${envOptions} (case-insensitive; if misspelled I'll choose the closest). I can pick.`;
+      ? `Env provided: ${env} (unrecognized; I'll infer and pick the closest match).`
+      : "Env? I can infer and choose the closest match (case-insensitive).";
     const dbLine = dbList?.length
       ? `Databases/data sources: ${dbList.join(", ")} (locked).`
       : "Databases/data sources? If unknown I'll infer by env/prefix and explore schemas.";
@@ -145,7 +97,7 @@ server.prompt(
       dbLine,
       widgetLine,
       notesLine,
-      `Env handling: case-insensitive; if a value is close to ${envOptions}, I'll choose the best fit.`,
+      "Env handling: case-insensitive; I'll choose the closest match if the value is approximate.",
       "Data selection: pick only data sources/tables/columns you can actually see or infer from schema inspection; avoid guessing unseen fields. If unsure, explore schema first, then propose.",
       "Plan I'll share: map env→data sources (by prefix), gather tables/filters/time, explore schemas if unsure, draft SQL + params, propose dashboard/widgets/layout.",
       "Query hygiene: do NOT create multiple temp queries; reuse/update a single scratch query if one is required instead of creating new ones.",
@@ -219,8 +171,8 @@ server.prompt(
             : ""
         }).`
       : env
-      ? `Env provided: ${env} (unrecognized; I'll infer ${envOptions} and pick the best fit).`
-      : `Env? ${envOptions} (case-insensitive; if misspelled I'll choose the closest). I can pick.`;
+      ? `Env provided: ${env} (unrecognized; I'll infer and pick the closest match).`
+      : "Env? I can infer and choose the closest match (case-insensitive).";
     const dsLine = dsList?.length
       ? `Data sources: ${dsList.join(", ")} (locked).`
       : "Data sources? If unknown I'll infer by env/prefix and explore schemas.";
@@ -247,7 +199,7 @@ server.prompt(
       widgetLine,
       filterLine,
       notesLine,
-      `Env handling: case-insensitive; if a value is close to ${envOptions}, I'll choose the best fit.`,
+      "Env handling: case-insensitive; I'll choose the closest match if the value is approximate.",
       "Data selection: choose only data sources/tables/columns you can actually access or confirm via schema exploration; avoid guessing unseen fields. Explore schema first when unsure, then propose queries and visuals accordingly.",
       "",
       "Tooling available: use describe_visualization_options(type) to see required/optional option keys before creating a visualization. Use it plus query columns to build explicit options (e.g., columnMapping or counterColName).",
@@ -870,6 +822,56 @@ const visualizationOptionGuides: Record<string, Record<string, unknown>> = {
   },
 };
 
+// Apply light-touch default number/percent formatting so visualizations render with human-friendly units.
+// This is conservative: only fills defaults when users did not provide them.
+const applyDefaultFormatting = (
+  type: string,
+  options?: Record<string, unknown>
+): Record<string, unknown> | undefined => {
+  if (!options || typeof options !== "object") return options;
+
+  const cloned: Record<string, unknown> = { ...options };
+  const toStr = (value: unknown) => (typeof value === "string" ? value : "");
+  const isPercentColumn = (col: string) => /pct|percent/i.test(col);
+  const isDurationColumn = (col: string) =>
+    /duration|latency|time|sec|ms/i.test(col);
+
+  const upperType = type.toUpperCase();
+
+  if (upperType === "COUNTER") {
+    const colName = toStr(cloned.counterColName);
+    if (colName) {
+      if (isPercentColumn(colName)) {
+        cloned.stringSuffix ??= "%";
+        cloned.stringDecimal ??= 1;
+        cloned.tooltipFormat ??= "0,0.0";
+      } else if (isDurationColumn(colName)) {
+        cloned.stringSuffix ??= " s";
+        cloned.stringDecimal ??= 2;
+        cloned.tooltipFormat ??= "0,0.00";
+      }
+    }
+    cloned.stringThouSep ??= ",";
+  }
+
+  if (upperType === "CHART") {
+    cloned.numberFormat ??= "0,0.[00]";
+    const mapping = cloned.columnMapping as Record<string, string> | undefined;
+    if (mapping) {
+      const yCols = Object.entries(mapping)
+        .filter(([, role]) => role === "y")
+        .map(([col]) => col);
+      const hasPctY = yCols.some(isPercentColumn);
+      if (hasPctY) {
+        cloned.numberFormat ??= "0,0.0%";
+        cloned.percentFormat ??= "0,0.0%";
+      }
+    }
+  }
+
+  return cloned;
+};
+
 // Describe visualization options (guidance only; no enforcement)
 server.tool(
   "describe_visualization_options",
@@ -923,12 +925,13 @@ server.tool(
   },
   async ({ query_id, name, type, description, options }) => {
     try {
+      const normalizedOptions = applyDefaultFormatting(type, options);
       const visualization = await RedashAPI.createVisualization({
         query_id,
         name,
         type,
         description,
-        options,
+        options: normalizedOptions,
       });
 
       return {

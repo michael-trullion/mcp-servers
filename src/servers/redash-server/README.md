@@ -49,7 +49,7 @@ Concise helper that asks for environment, data sources, and widget needs, then p
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `goal` | string | No | User goal or question for the query/dashboard |
-| `env` | "prod" \| "prod-eu" \| "azure" \| "azure-dev" \| "dev" | No | Target environment (case-insensitive; auto-normalizes to the closest match); inferred if missing |
+| `env` | string | No | Target environment (case-insensitive; inferred/normalized if missing) |
 | `databases` | string[] | No | Databases/data sources to use; inferred from env/prefix if omitted |
 | `widgets` | string[] | No | Preferred widget/visualization types; defaults proposed if missing |
 | `notes` | string | No | Extra constraints (filters, time ranges, joins, sorting, instructions) |
@@ -62,7 +62,7 @@ Guides users through creating a dashboard: environment, data sources, widgets/la
 | Name | Type | Required | Description |
 |------|------|----------|-------------|
 | `name` | string | No | Dashboard name/title |
-| `env` | "prod" \| "prod-eu" \| "azure" \| "azure-dev" \| "dev" | No | Target environment (case-insensitive; auto-normalizes to the closest match); inferred if missing |
+| `env` | string | No | Target environment (case-insensitive; inferred/normalized if missing) |
 | `data_sources` | string | No | Data sources/DBs (comma-separated); inferred if missing |
 | `widgets` | string | No | Preferred widgets/layout blocks (comma-separated) |
 | `goal` | string | No | Business questions to answer |
